@@ -54,6 +54,7 @@ Examples:
   python venom.py -u https://target.com --mode auto --depth deep
   python venom.py -u https://target.com --mode auto --depth full --threads 50
   python venom.py -u https://target.com --mode auto --depth quantum --threads 50
+  python venom.py -u https://target.com --mode auto --depth titan --threads 50
 
 ⚠️  FOR AUTHORIZED TESTING ONLY — Ensure you have written permission
         """
@@ -89,8 +90,8 @@ Examples:
     parser.add_argument("--delay", type=float, default=0, help="Delay between requests (seconds, 0-60)")
     parser.add_argument(
         "--depth", default="standard",
-        choices=["quick", "standard", "deep", "full", "quantum"],
-        help="Scan depth: quick (surface), standard (default), deep (thorough), full (maximum), quantum (ultra-deep v4.0)"
+        choices=["quick", "standard", "deep", "full", "quantum", "titan"],
+        help="Scan depth: quick (surface), standard (default), deep (thorough), full (maximum), quantum (ultra-deep v4.0), titan (ultimate v7.0)"
     )
     
     # Output options

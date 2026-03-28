@@ -246,6 +246,19 @@ def api_integrations():
 
 @app.route("/learning/<vuln_type>")
 def learning_detail(vuln_type):
+    # v7.0 Titan: validate vuln_type against known types to prevent injection
+    KNOWN_VULN_TYPES = {
+        "sqli", "nosql", "cmd", "ssti", "xxe", "ldap", "xpath",
+        "xss", "csrf", "clickjack", "cors", "open_redirect", "prototype_pollution",
+        "ssrf", "lfi", "rfi", "file_upload", "rce", "http_smuggling",
+        "auth_bypass", "jwt", "session", "oauth", "idor", "account_takeover",
+        "race_condition", "business_logic", "mass_assignment", "rate_limit",
+        "graphql", "websocket", "cache_poison", "crlf", "host_header",
+        "subdomain_takeover",
+    }
+    if vuln_type not in KNOWN_VULN_TYPES:
+        return jsonify({"error": "Unknown vulnerability type"}), 400
+
     try:
         from debugger.learning_resources import LearningResources
         from debugger.code_fixer import CodeFixer

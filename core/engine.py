@@ -200,6 +200,25 @@ class ScanEngine:
                 self.findings = validator.cross_correlate_findings(self.findings)
             except Exception as e:
                 log_warning(f"Cross-correlation error: {e}")
+
+        # Phase 3c: OOB Verification (v7.0 Titan)
+        if self.depth_preset.get("oob_verification"):
+            log_info("Phase 3c: Out-of-Band Verification")
+            try:
+                from core.oob_verifier import OOBVerifier
+                oob = OOBVerifier()
+                if oob.is_configured:
+                    for token in oob.get_pending_tokens():
+                        result = oob.check_callback(token)
+                        if result.get("verified"):
+                            log_success(
+                                f"OOB confirmed: {token.vuln_type} @ "
+                                f"{token.url} param={token.param}"
+                            )
+                else:
+                    log_info("OOB verification: no callback domain configured (dry-run)")
+            except Exception as e:
+                log_warning(f"OOB verification error: {e}")
         
         # Phase 4: CVE Enrichment
         if self._integrations.get("cve"):

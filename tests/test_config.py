@@ -43,13 +43,13 @@ def test_default_values():
 def test_scan_depth_default():
     """SCAN_DEPTH should default to 'standard'."""
     import config
-    assert config.SCAN_DEPTH in ("quick", "standard", "deep", "full", "quantum")
+    assert config.SCAN_DEPTH in ("quick", "standard", "deep", "full", "quantum", "titan")
 
 
 def test_depth_presets_keys():
-    """All five depth levels should have presets."""
+    """All six depth levels should have presets."""
     import config
-    for level in ("quick", "standard", "deep", "full", "quantum"):
+    for level in ("quick", "standard", "deep", "full", "quantum", "titan"):
         assert level in config.DEPTH_PRESETS
         preset = config.DEPTH_PRESETS[level]
         assert "crawl_depth" in preset
@@ -64,7 +64,7 @@ def test_depth_presets_keys():
 def test_depth_presets_ordering():
     """Deeper levels should have higher crawl depth and more pages."""
     import config
-    levels = ["quick", "standard", "deep", "full", "quantum"]
+    levels = ["quick", "standard", "deep", "full", "quantum", "titan"]
     for i in range(len(levels) - 1):
         a = config.DEPTH_PRESETS[levels[i]]
         b = config.DEPTH_PRESETS[levels[i + 1]]
@@ -73,10 +73,10 @@ def test_depth_presets_ordering():
 
 
 def test_version_is_5():
-    """Version should be 6.0.0 for Viper edition."""
+    """Version should be 7.0.0 for Titan edition."""
     import config
-    assert config.VERSION == "6.0.0"
-    assert config.CODENAME == "Viper"
+    assert config.VERSION == "7.0.0"
+    assert config.CODENAME == "Titan"
 
 
 def test_apex_integration_config_keys():
