@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "venomstrike"
-version = "3.0.0"
-description = "Advanced Security Testing & Vulnerability Debugging Framework — Educational Tool"
+version = "4.0.0"
+description = "Advanced Security Testing & Vulnerability Debugging Framework — Quantum Edition — Educational Tool"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"

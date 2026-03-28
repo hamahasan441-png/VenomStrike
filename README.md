@@ -1,6 +1,6 @@
-# 🗡️ VenomStrike v3.0
+# 🗡️ VenomStrike v4.0 — Quantum Edition
 
-> **Advanced Security Testing & Vulnerability Debugging Framework — Educational Tool**
+> **Advanced Security Testing & Vulnerability Debugging Framework — Quantum Edition — Educational Tool**
 
 ⚠️ **LEGAL DISCLAIMER**: VenomStrike is for **authorized security testing ONLY**. You must have explicit written permission to test any system. Unauthorized testing is illegal and unethical.
 
@@ -12,10 +12,22 @@
 - **35+ vulnerability modules** across 6 categories: Injection, Client-Side, Server-Side, Auth, Logic, Advanced
 - **Multi-threaded scanning** with configurable concurrency
 - **Automatic reconnaissance**: endpoint discovery, tech fingerprinting, attack surface mapping
-- **False positive filtering** with 3x validation and confidence scoring
+- **False positive filtering** with multi-stage validation and confidence scoring
 - **Learning mode**: fix code, explanations, and OWASP mapping for every finding
 
-### Scan Depth Levels (v3.0)
+### Quantum Verification Engine (v4.0)
+
+VenomStrike v4.0 "Quantum" introduces an enhanced verification pipeline to ensure **all reported vulnerabilities are real and true**:
+
+| Feature | Description |
+|---------|-------------|
+| **Triple-Marker Confirmation** | Three independent injection markers must ALL trigger the same behavioural change. Baseline must be clean. 25-point confidence boost. |
+| **Cross-Correlation Analysis** | Findings of the same vulnerability type across different parameters on the same endpoint provide corroborating evidence, boosting confidence. |
+| **Entropy-Based Anomaly Detection** | Measures Shannon entropy delta between baseline and payload responses to detect structural changes (error dumps, file contents) vs cosmetic noise. |
+| **Statistical Confidence Scoring** | Uses z-score analysis and p-value significance testing across multiple measurement samples for data-driven confidence instead of threshold guessing. |
+| **Verification Chain** | Every finding includes an ordered audit trail of all verification steps performed, with method names, results, and timestamps. |
+
+### Scan Depth Levels
 
 Control scanning thoroughness with the `--depth` flag:
 
@@ -25,8 +37,9 @@ Control scanning thoroughness with the `--depth` flag:
 | `standard` | 2 levels, 50 pages | 100 paths | 50 endpoints | 15/type | 3x | Balanced (default) |
 | `deep` | 3 levels, 150 pages | 250 paths | 120 endpoints | 30/type | 5x | Thorough assessment |
 | `full` | 5 levels, 500 pages | All paths | All endpoints | All | 7x | Maximum coverage |
+| `quantum` | 7 levels, 1000 pages | All paths | All endpoints | All | 10x | **Ultra-deep v4.0** — triple confirm, cross-correlation, entropy analysis |
 
-### Expanded Payload & Wordlist Coverage (v3.0)
+### Expanded Payload & Wordlist Coverage
 - **950+ wordlist entries** across 6 categories (directories, API endpoints, subdomains, backup files, hidden params, user agents)
 - **800+ payload variations** across 11 vulnerability categories
 - Deeper SQLi, XSS, SSRF, SSTI, LFI, and command injection payloads
@@ -97,6 +110,9 @@ python venom.py -u https://target.com --mode auto --depth deep
 # Full scan — maximum coverage, all payloads
 python venom.py -u https://target.com --mode auto --depth full --threads 50
 
+# Quantum scan — ultra-deep v4.0 with triple confirmation & cross-correlation
+python venom.py -u https://target.com --mode auto --depth quantum --threads 50
+
 # With tool integrations
 python venom.py -u https://target.com --mode auto --nmap --nuclei
 
@@ -125,7 +141,7 @@ All settings can be configured via environment variables or `.env` file:
 VS_THREADS=10          # Concurrent threads
 VS_TIMEOUT=10          # Request timeout (seconds)
 VS_MIN_CONFIDENCE=70   # Minimum confidence to report (0-100)
-VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full
+VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full, quantum
 
 # Integrations
 VS_NMAP_ENABLED=true

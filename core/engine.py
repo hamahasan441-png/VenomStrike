@@ -191,6 +191,16 @@ class ScanEngine:
         log_info("Phase 3: Verification & Deduplication")
         self.findings = self._verify_and_deduplicate(self.findings)
         
+        # Phase 3b: Quantum cross-correlation (v4.0)
+        if self.depth_preset.get("cross_correlation"):
+            log_info("Phase 3b: Quantum Cross-Correlation Analysis")
+            try:
+                from core.validator import ResultValidator
+                validator = ResultValidator(session=self.session_manager.session if self.session_manager else None)
+                self.findings = validator.cross_correlate_findings(self.findings)
+            except Exception as e:
+                log_warning(f"Cross-correlation error: {e}")
+        
         # Phase 4: CVE Enrichment
         if self._integrations.get("cve"):
             log_info("Phase 4: CVE Enrichment")

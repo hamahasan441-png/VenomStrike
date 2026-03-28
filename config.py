@@ -1,10 +1,11 @@
-"""Global configuration for VenomStrike v3.0."""
+"""Global configuration for VenomStrike v4.0 — Quantum Edition."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-VERSION = "3.0.0"
+VERSION = "4.0.0"
+CODENAME = "Quantum"
 TOOL_NAME = "VenomStrike"
 AUTHOR = "Security Research Tool"
 
@@ -40,7 +41,7 @@ DEFAULT_TIMEOUT = _int_env("VS_TIMEOUT", 10, lo=1, hi=120)
 DEFAULT_THREADS = _int_env("VS_THREADS", 10, lo=1, hi=100)
 MAX_THREADS = 100
 DEFAULT_DELAY = _float_env("VS_DELAY", 0.5, lo=0.0, hi=60.0)
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/3.0; Security Testing)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/4.0-Quantum; Security Testing)"
 
 # Retry / resilience
 RETRY_ATTEMPTS = _int_env("VS_RETRY_ATTEMPTS", 3, lo=0, hi=10)
@@ -62,7 +63,9 @@ MAX_CONCURRENT_REQUESTS = _int_env("VS_MAX_CONCURRENT", 50, lo=1, hi=500)
 #   standard — balanced depth (default, same behaviour as v2)
 #   deep     — more payloads, deeper crawl, higher validation
 #   full     — maximum depth: all payloads, deepest crawl, max validation
-_VALID_DEPTHS = ("quick", "standard", "deep", "full")
+#   quantum  — v4.0 ultra-deep: triple-marker confirmation, cross-correlation,
+#              entropy analysis, statistical confidence — maximum accuracy
+_VALID_DEPTHS = ("quick", "standard", "deep", "full", "quantum")
 SCAN_DEPTH = os.environ.get("VS_SCAN_DEPTH", "standard").lower()
 if SCAN_DEPTH not in _VALID_DEPTHS:
     SCAN_DEPTH = "standard"
@@ -105,6 +108,19 @@ DEPTH_PRESETS = {
         "validation_attempts": 7,
         "min_confidence": 50,
     },
+    "quantum": {
+        "crawl_depth": 7,
+        "max_crawl_pages": 1000,
+        "dir_brute_limit": 0,
+        "api_brute_limit": 0,
+        "payload_limit": 0,
+        "validation_attempts": 10,
+        "min_confidence": 40,
+        "cross_correlation": True,
+        "entropy_analysis": True,
+        "triple_confirm": True,
+        "statistical_confidence": True,
+    },
 }
 
 # Confidence thresholds
@@ -112,6 +128,12 @@ MIN_CONFIDENCE = _int_env("VS_MIN_CONFIDENCE", 70, lo=0, hi=100)
 VALIDATION_ATTEMPTS = _int_env("VS_VALIDATION_ATTEMPTS", 3, lo=1, hi=10)
 TIMING_TOLERANCE = _float_env("VS_TIMING_TOLERANCE", 1.5, lo=0.1, hi=10.0)
 CVE_ENRICH_LIMIT = _int_env("VS_CVE_ENRICH_LIMIT", 20, lo=1, hi=200)
+
+# Quantum verification settings (v4.0)
+QUANTUM_CROSS_CORRELATION = os.environ.get("VS_CROSS_CORRELATION", "true").lower() == "true"
+QUANTUM_ENTROPY_THRESHOLD = _float_env("VS_ENTROPY_THRESHOLD", 0.3, lo=0.0, hi=1.0)
+QUANTUM_TRIPLE_CONFIRM = os.environ.get("VS_TRIPLE_CONFIRM", "true").lower() == "true"
+QUANTUM_STATISTICAL_MIN_SAMPLES = _int_env("VS_STAT_MIN_SAMPLES", 5, lo=3, hi=20)
 
 # Injection engine — advanced settings
 WAF_EVASION_ENABLED = os.environ.get("VS_WAF_EVASION", "true").lower() == "true"

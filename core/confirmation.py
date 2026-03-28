@@ -10,6 +10,11 @@ Implements the Probe → Confirm → Baseline verification pipeline:
    of change, the finding is confirmed.
 3. **Baseline**: Optionally send a benign value to verify that normal input
    does *not* cause the same change (rules out dynamic content FPs).
+
+Quantum Edition (v4.0) adds:
+4. **Triple Confirm**: Optional third independent marker for maximum assurance.
+   When all three markers independently trigger the same change AND the
+   baseline is clean, confidence boost is 25 points (vs 15 for dual).
 """
 import time
 import logging
@@ -20,6 +25,7 @@ import requests
 from core.injection_context import ConfirmationMarker
 from core.raw_response import RawResponseAnalyzer
 from core.utils import make_request
+from config import QUANTUM_TRIPLE_CONFIRM
 
 logger = logging.getLogger("venomstrike.confirmation")
 
@@ -158,3 +164,102 @@ class InjectionConfirmer:
             "threshold": threshold,
             "confidence_boost": 15 if confirmations >= 2 else 0,
         }
+
+    def confirm_triple(
+        self,
+        inject_func: Callable[[str], Optional[requests.Response]],
+        check_func: Callable[[requests.Response, str], bool],
+        baseline_func: Callable[[], Optional[requests.Response]] = None,
+    ) -> Dict:
+        """Run the Quantum triple-marker confirmation pipeline.
+
+        Uses three independent markers instead of two.  All three must
+        trigger the same class of behavioural change AND the baseline must
+        be clean for full confirmation.
+
+        Falls back to dual-marker logic when QUANTUM_TRIPLE_CONFIRM is
+        disabled or when the third marker stage fails.
+
+        Returns:
+            Dict with confirmed, probe/confirm/triple matched flags,
+            baseline_clean, markers, confidence_boost.
+        """
+        marker1, marker2 = ConfirmationMarker.pair()
+        marker3 = ConfirmationMarker.generate()
+
+        result: Dict = {
+            "confirmed": False,
+            "probe_matched": False,
+            "confirm_matched": False,
+            "triple_matched": False,
+            "baseline_clean": True,
+            "markers": (marker1, marker2, marker3),
+            "confidence_boost": 0,
+            "verification_level": "quantum_triple",
+        }
+
+        if not QUANTUM_TRIPLE_CONFIRM:
+            # Fallback to standard dual-confirm
+            dual = self.confirm(inject_func, check_func, baseline_func)
+            dual["verification_level"] = "dual"
+            return dual
+
+        # Stage 1: Probe
+        try:
+            resp1 = inject_func(marker1)
+            if resp1 is not None and check_func(resp1, marker1):
+                result["probe_matched"] = True
+        except Exception as exc:
+            logger.debug("Triple-confirm probe failed: %s", exc)
+            return result
+
+        if not result["probe_matched"]:
+            return result
+
+        # Stage 2: Confirm
+        try:
+            resp2 = inject_func(marker2)
+            if resp2 is not None and check_func(resp2, marker2):
+                result["confirm_matched"] = True
+        except Exception as exc:
+            logger.debug("Triple-confirm stage 2 failed: %s", exc)
+
+        # Stage 3: Triple
+        try:
+            resp3 = inject_func(marker3)
+            if resp3 is not None and check_func(resp3, marker3):
+                result["triple_matched"] = True
+        except Exception as exc:
+            logger.debug("Triple-confirm stage 3 failed: %s", exc)
+
+        # Stage 4: Baseline check
+        if baseline_func is not None:
+            try:
+                baseline_resp = baseline_func()
+                if baseline_resp is not None:
+                    if (check_func(baseline_resp, marker1)
+                            or check_func(baseline_resp, marker2)
+                            or check_func(baseline_resp, marker3)):
+                        result["baseline_clean"] = False
+            except Exception as exc:
+                logger.debug("Triple-confirm baseline check failed: %s", exc)
+
+        # Scoring
+        matched_count = sum([
+            result["probe_matched"],
+            result["confirm_matched"],
+            result["triple_matched"],
+        ])
+
+        if matched_count == 3 and result["baseline_clean"]:
+            result["confirmed"] = True
+            result["confidence_boost"] = 25
+        elif matched_count >= 2 and result["baseline_clean"]:
+            result["confirmed"] = True
+            result["confidence_boost"] = 15
+        elif matched_count >= 2:
+            result["confidence_boost"] = 5
+        elif matched_count == 1:
+            result["confidence_boost"] = 0
+
+        return result
