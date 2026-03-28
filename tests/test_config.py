@@ -73,10 +73,10 @@ def test_depth_presets_ordering():
 
 
 def test_version_is_5():
-    """Version should be 5.0.0 for Apex edition."""
+    """Version should be 6.0.0 for Viper edition."""
     import config
-    assert config.VERSION == "5.0.0"
-    assert config.CODENAME == "Apex"
+    assert config.VERSION == "6.0.0"
+    assert config.CODENAME == "Viper"
 
 
 def test_apex_integration_config_keys():

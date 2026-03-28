@@ -11,6 +11,7 @@ from core.utils import (
     is_valid_url,
     sanitize_param,
     build_finding,
+    build_injection_url,
 )
 
 
@@ -74,3 +75,64 @@ def test_build_finding():
     assert finding["confidence"] == 85
     assert finding["cwe"] == "CWE-79"
     assert "timestamp" in finding
+
+
+# ── Injection URL builder tests ────────────────────────────────
+
+def test_build_injection_url_get_basic():
+    """GET injection URL should embed payload in query string."""
+    result = build_injection_url(
+        "http://example.com/search?q=test", "q", "' OR 1=1--", "GET"
+    )
+    assert "example.com/search?" in result
+    assert "q=" in result
+    # The payload should be URL-encoded in the query string
+    assert "OR" in result or "1%3D1" in result
+
+
+def test_build_injection_url_get_no_existing_params():
+    """GET injection URL should add parameter even if URL has no query string."""
+    result = build_injection_url(
+        "http://example.com/page", "id", "1", "GET"
+    )
+    assert "id=1" in result
+
+
+def test_build_injection_url_post():
+    """POST injection URL should include [POST: param=payload] suffix."""
+    result = build_injection_url(
+        "http://example.com/login", "user", "admin'--", "POST"
+    )
+    assert "[POST:" in result
+    assert "user=admin'--" in result
+    assert "http://example.com/login" in result
+
+
+def test_build_injection_url_preserves_other_params():
+    """GET injection URL should preserve existing params."""
+    result = build_injection_url(
+        "http://example.com/search?q=test&page=1", "q", "<script>alert(1)</script>", "GET"
+    )
+    assert "page=" in result
+    assert "q=" in result
+
+
+def test_build_injection_url_xss_payload():
+    """Injection URL with XSS payload should be buildable."""
+    result = build_injection_url(
+        "http://example.com/?name=john", "name",
+        '<script>alert(1)</script>', "GET"
+    )
+    assert "name=" in result
+    # Script tag should be URL-encoded
+    assert "script" in result.lower()
+
+
+def test_build_injection_url_sqli_payload():
+    """Injection URL with SQLi payload should be buildable."""
+    result = build_injection_url(
+        "http://example.com/api?id=5", "id",
+        "' UNION SELECT NULL,NULL-- -", "GET"
+    )
+    assert "id=" in result
+    assert "UNION" in result or "union" in result.lower()

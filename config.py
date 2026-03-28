@@ -1,11 +1,11 @@
-"""Global configuration for VenomStrike v5.0 — Apex Edition."""
+"""Global configuration for VenomStrike v6.0 — Viper Edition."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-VERSION = "5.0.0"
-CODENAME = "Apex"
+VERSION = "6.0.0"
+CODENAME = "Viper"
 TOOL_NAME = "VenomStrike"
 AUTHOR = "Security Research Tool"
 
@@ -41,7 +41,7 @@ DEFAULT_TIMEOUT = _int_env("VS_TIMEOUT", 10, lo=1, hi=120)
 DEFAULT_THREADS = _int_env("VS_THREADS", 10, lo=1, hi=100)
 MAX_THREADS = 100
 DEFAULT_DELAY = _float_env("VS_DELAY", 0.5, lo=0.0, hi=60.0)
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/5.0-Apex; Security Testing)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/6.0-Viper; Security Testing)"
 
 # Retry / resilience
 RETRY_ATTEMPTS = _int_env("VS_RETRY_ATTEMPTS", 3, lo=0, hi=10)

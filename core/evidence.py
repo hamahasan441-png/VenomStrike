@@ -80,6 +80,9 @@ class EvidencePackage:
     # Deduplication
     fingerprint: str = ""
 
+    # Injection URL — full URL with payload injected for reproduction
+    injection_url: str = ""
+
     # Raw evidence — full request/response capture for audit
     raw_headers: str = ""
 
@@ -99,6 +102,7 @@ class EvidencePackage:
             "tested_url": self.tested_url,
             "tested_param": self.tested_param,
             "tested_payload": self.tested_payload,
+            "injection_url": self.injection_url,
             "proof_description": self.proof_description,
             "proof_data": self.proof_data,
             "verification_status": self.verification_status,

@@ -14,6 +14,34 @@ class FalsePositiveFilter:
     3. Returns a dict with is_real (bool) and reason (str) for audit trail
     """
 
+    # ── Response Stability ─────────────────────────────────────────
+
+    @staticmethod
+    def check_response_stability(responses) -> bool:
+        """Verify that multiple baseline responses are consistent.
+
+        If baselines vary significantly, the endpoint produces dynamic
+        content and length-based comparisons are unreliable.
+
+        Args:
+            responses: list of requests.Response objects (2-3 baselines).
+
+        Returns:
+            True if responses are stable (consistent), False if dynamic.
+        """
+        if not responses or len(responses) < 2:
+            return True
+        lengths = [len(r.text) for r in responses if r is not None]
+        if len(lengths) < 2:
+            return True
+        max_len = max(lengths)
+        min_len = min(lengths)
+        if max_len == 0:
+            return True
+        variance_pct = ((max_len - min_len) / max(max_len, 1)) * 100
+        # If baselines vary by more than 5%, the endpoint is dynamic
+        return variance_pct <= 5.0
+
     # ── SQL Injection ──────────────────────────────────────────────
 
     SQL_ERRORS = [
@@ -256,17 +284,19 @@ class FalsePositiveFilter:
                     }
                     return result
 
-        # Fallback: response diff analysis
+        # Fallback: response diff analysis — require substantial evidence
         if baseline_resp is None:
-            result["is_real"] = True
-            result["reason"] = "No baseline available for comparison, response received"
+            # Without a baseline we cannot confirm; mark suspicious, not real
+            result["reason"] = "No baseline available for comparison — cannot confirm"
             return result
 
         len_diff = abs(len(payload_resp.text) - len(baseline_resp.text))
         status_diff = payload_resp.status_code != baseline_resp.status_code
         diff_percent = (len_diff / max(len(baseline_resp.text), 1)) * 100
 
-        if len_diff > 100 or (status_diff and payload_resp.status_code == 200):
+        # Require BOTH significant length diff AND a status change or content
+        # indicator — pure length diff produces too many false positives
+        if status_diff and payload_resp.status_code == 200 and len_diff > 200:
             result["is_real"] = True
             result["reason"] = (
                 f"Response differs significantly: "
@@ -281,8 +311,26 @@ class FalsePositiveFilter:
                 "payload_status": payload_resp.status_code,
             }
             return result
-        elif len_diff > 50:
-            result["reason"] = f"Minor response diff ({len_diff} bytes) — marginal evidence"
+        elif len_diff > 500 and diff_percent > 30:
+            # Very large change that is unlikely to be natural variation
+            result["is_real"] = True
+            result["reason"] = (
+                f"Very large response diff: {len_diff} bytes ({diff_percent:.0f}%) "
+                f"— likely internal resource content"
+            )
+            result["proof_data"] = {
+                "response_diff_percent": diff_percent,
+                "baseline_length": len(baseline_resp.text),
+                "payload_length": len(payload_resp.text),
+                "baseline_status": baseline_resp.status_code,
+                "payload_status": payload_resp.status_code,
+            }
+            return result
+        elif len_diff > 100:
+            result["reason"] = (
+                f"Moderate response diff ({len_diff} bytes, {diff_percent:.0f}%) "
+                f"— insufficient without content markers"
+            )
         else:
             result["reason"] = f"Responses too similar (diff: {len_diff} bytes)"
 
