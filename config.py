@@ -1,11 +1,11 @@
-"""Global configuration for VenomStrike v4.0 — Quantum Edition."""
+"""Global configuration for VenomStrike v5.0 — Apex Edition."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-VERSION = "4.0.0"
-CODENAME = "Quantum"
+VERSION = "5.0.0"
+CODENAME = "Apex"
 TOOL_NAME = "VenomStrike"
 AUTHOR = "Security Research Tool"
 
@@ -41,7 +41,7 @@ DEFAULT_TIMEOUT = _int_env("VS_TIMEOUT", 10, lo=1, hi=120)
 DEFAULT_THREADS = _int_env("VS_THREADS", 10, lo=1, hi=100)
 MAX_THREADS = 100
 DEFAULT_DELAY = _float_env("VS_DELAY", 0.5, lo=0.0, hi=60.0)
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/4.0-Quantum; Security Testing)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/5.0-Apex; Security Testing)"
 
 # Retry / resilience
 RETRY_ATTEMPTS = _int_env("VS_RETRY_ATTEMPTS", 3, lo=0, hi=10)
@@ -183,6 +183,13 @@ NUCLEI_TEMPLATES_DIR = os.environ.get("VS_NUCLEI_TEMPLATES", "")
 
 # CVE / NVD lookup
 NVD_API_KEY = os.environ.get("NVD_API_KEY", "")
+
+# Amass subdomain enumeration
+AMASS_ENABLED = os.environ.get("VS_AMASS_ENABLED", "false").lower() == "true"
+AMASS_PATH = os.environ.get("VS_AMASS_PATH", "amass")
+
+# Wappalyzer technology fingerprinting
+WAPPALYZER_ENABLED = os.environ.get("VS_WAPPALYZER_ENABLED", "false").lower() == "true"
 
 # Legal
 LEGAL_DISCLAIMER = """
