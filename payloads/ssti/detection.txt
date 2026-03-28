@@ -17,4 +17,4 @@ ${T(java.lang.Runtime).getRuntime()}
 [[${7*7}]]
 ${7*7}
 {{config}}
-p]hpinfo()
+phpinfo()
