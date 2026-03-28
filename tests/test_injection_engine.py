@@ -914,7 +914,153 @@ class TestPayloadTransformerOverlongUtf8:
 
 
 class TestApexTechniqueCount:
-    """Verify v5.0 has all 17 WAF evasion techniques."""
+    """Verify v6.0 has all 17 WAF evasion techniques."""
     def test_total_technique_count(self):
         from core.waf_evasion import PayloadTransformer
         assert len(PayloadTransformer.ALL_TECHNIQUES) == 17
+
+
+# ── Viper v6.0 Tests ──────────────────────────────────────────────
+
+
+class TestResponseStability:
+    """Tests for false positive response stability check (v6.0)."""
+
+    def test_stable_responses_detected(self):
+        from core.false_positive_filter import FalsePositiveFilter
+        r1 = MagicMock()
+        r1.text = "A" * 1000
+        r2 = MagicMock()
+        r2.text = "A" * 1010  # < 5% variance
+        assert FalsePositiveFilter.check_response_stability([r1, r2]) is True
+
+    def test_unstable_responses_detected(self):
+        from core.false_positive_filter import FalsePositiveFilter
+        r1 = MagicMock()
+        r1.text = "A" * 1000
+        r2 = MagicMock()
+        r2.text = "B" * 200  # 80% variance
+        assert FalsePositiveFilter.check_response_stability([r1, r2]) is False
+
+    def test_single_response_is_stable(self):
+        from core.false_positive_filter import FalsePositiveFilter
+        r1 = MagicMock()
+        r1.text = "content"
+        assert FalsePositiveFilter.check_response_stability([r1]) is True
+
+    def test_empty_list_is_stable(self):
+        from core.false_positive_filter import FalsePositiveFilter
+        assert FalsePositiveFilter.check_response_stability([]) is True
+
+
+class TestStricterSSRFFilter:
+    """Tests for stricter SSRF false positive filter (v6.0)."""
+
+    def test_ssrf_no_baseline_not_real(self):
+        """Without baseline, SSRF should NOT be marked as real."""
+        from core.false_positive_filter import FalsePositiveFilter
+        fp = FalsePositiveFilter()
+        payload_resp = MagicMock()
+        payload_resp.text = "some content"
+        payload_resp.status_code = 200
+        result = fp.check_ssrf_detailed(None, payload_resp, "http://127.0.0.1/")
+        assert result["is_real"] is False
+
+    def test_ssrf_small_diff_not_real(self):
+        """Small response diff (< 200 bytes) should not confirm SSRF."""
+        from core.false_positive_filter import FalsePositiveFilter
+        fp = FalsePositiveFilter()
+        baseline = MagicMock()
+        baseline.text = "A" * 500
+        baseline.status_code = 200
+        payload = MagicMock()
+        payload.text = "A" * 620  # 120 bytes diff — under new threshold
+        payload.status_code = 200
+        result = fp.check_ssrf_detailed(baseline, payload, "http://127.0.0.1/")
+        assert result["is_real"] is False
+
+    def test_ssrf_cloud_metadata_still_detected(self):
+        """Cloud metadata content should still be detected."""
+        from core.false_positive_filter import FalsePositiveFilter
+        fp = FalsePositiveFilter()
+        baseline = MagicMock()
+        baseline.text = "normal page content"
+        baseline.status_code = 200
+        payload = MagicMock()
+        payload.text = "ami-id=abc123 instance-id=i-12345"
+        payload.status_code = 200
+        result = fp.check_ssrf_detailed(
+            baseline, payload, "http://169.254.169.254/latest/meta-data/"
+        )
+        assert result["is_real"] is True
+        assert "metadata" in result["reason"].lower() or "ami" in result["reason"].lower()
+
+
+class TestInjectionURLInFindings:
+    """Tests for injection URL inclusion in findings (v6.0)."""
+
+    def test_injection_url_built_by_base_exploiter(self):
+        """add_verified_finding should auto-build injection URL."""
+        from exploits.base_exploiter import BaseExploiter
+        from core.evidence import EvidencePackage, VERIFIED_LIKELY
+
+        class DummyExploiter(BaseExploiter):
+            def run(self, target, endpoints):
+                return []
+
+        exploiter = DummyExploiter()
+        evidence = EvidencePackage(
+            vuln_type="SQLi",
+            tested_url="http://example.com/search?q=test",
+            tested_param="q",
+            tested_payload="' OR 1=1--",
+            verification_status=VERIFIED_LIKELY,
+            proof_data={"error_pattern": "sql syntax"},
+        )
+        finding = exploiter.add_verified_finding(
+            vuln_type="SQLi",
+            url="http://example.com/search?q=test",
+            param="q",
+            payload="' OR 1=1--",
+            severity="Critical",
+            confidence=90,
+            evidence_package=evidence,
+            method="GET",
+        )
+        assert finding is not None
+        assert "injection_url" in finding
+        assert finding["injection_url"] != ""
+        assert "q=" in finding["injection_url"]
+
+    def test_injection_url_in_evidence_dict(self):
+        """Evidence dict should contain injection_url."""
+        from exploits.base_exploiter import BaseExploiter
+        from core.evidence import EvidencePackage, VERIFIED_LIKELY
+
+        class DummyExploiter(BaseExploiter):
+            def run(self, target, endpoints):
+                return []
+
+        exploiter = DummyExploiter()
+        evidence = EvidencePackage(
+            vuln_type="XSS",
+            tested_url="http://test.com/?name=john",
+            tested_param="name",
+            tested_payload="<script>alert(1)</script>",
+            verification_status=VERIFIED_LIKELY,
+            proof_data={"reflected_payload": True},
+        )
+        finding = exploiter.add_verified_finding(
+            vuln_type="XSS",
+            url="http://test.com/?name=john",
+            param="name",
+            payload="<script>alert(1)</script>",
+            severity="High",
+            confidence=88,
+            evidence_package=evidence,
+            method="GET",
+        )
+        assert finding is not None
+        ev = finding["evidence"]
+        assert "injection_url" in ev
+        assert ev["injection_url"] != ""

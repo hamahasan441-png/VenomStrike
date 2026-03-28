@@ -25,11 +25,11 @@ class TestQuantumConfig:
 
     def test_version_is_4(self):
         import config
-        assert config.VERSION == "5.0.0"
+        assert config.VERSION == "6.0.0"
 
     def test_codename_is_quantum(self):
         import config
-        assert config.CODENAME == "Apex"
+        assert config.CODENAME == "Viper"
 
     def test_quantum_depth_preset_exists(self):
         import config
@@ -90,7 +90,7 @@ class TestQuantumConfig:
 
     def test_user_agent_contains_quantum(self):
         import config
-        assert "Apex" in config.DEFAULT_USER_AGENT or "5.0" in config.DEFAULT_USER_AGENT
+        assert "Viper" in config.DEFAULT_USER_AGENT or "6.0" in config.DEFAULT_USER_AGENT
 
 
 # ── Entropy-based anomaly detection ───────────────────────────────

@@ -142,3 +142,38 @@ def test_verification_status_constants():
     assert VERIFIED_SUSPICIOUS == "suspicious"
     assert VERIFIED_UNVERIFIED == "unverified"
     assert VERIFIED_FALSE_POSITIVE == "false_positive"
+
+
+# ── Injection URL in evidence tests ────────────────────────────
+
+def test_evidence_package_injection_url_field():
+    """EvidencePackage should have injection_url field."""
+    ep = EvidencePackage(
+        vuln_type="SQLi",
+        tested_url="http://example.com/search?q=test",
+        tested_param="q",
+        tested_payload="' OR 1=1--",
+        injection_url="http://example.com/search?q=%27+OR+1%3D1--",
+    )
+    assert ep.injection_url == "http://example.com/search?q=%27+OR+1%3D1--"
+
+
+def test_evidence_package_to_dict_includes_injection_url():
+    """to_dict should include injection_url."""
+    ep = EvidencePackage(
+        vuln_type="XSS",
+        tested_url="http://test.com",
+        tested_param="q",
+        injection_url="http://test.com?q=%3Cscript%3Ealert(1)%3C/script%3E",
+    )
+    d = ep.to_dict()
+    assert "injection_url" in d
+    assert "script" in d["injection_url"].lower()
+
+
+def test_evidence_package_injection_url_default_empty():
+    """Injection URL should default to empty string."""
+    ep = EvidencePackage()
+    assert ep.injection_url == ""
+    d = ep.to_dict()
+    assert d["injection_url"] == ""
