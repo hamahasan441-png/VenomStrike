@@ -36,6 +36,51 @@ class WAFDetector:
     # Status codes that often indicate WAF blocking
     BLOCK_STATUS_CODES = {403, 406, 429, 503}
 
+    # ── Titan v7.0: WAF Fingerprinting ────────────────────────────
+    # Header-based fingerprints for specific WAF products
+    WAF_HEADER_FINGERPRINTS = {
+        "Cloudflare": {
+            "headers": ["cf-ray", "cf-cache-status", "cf-request-id"],
+            "server_pattern": r"cloudflare",
+        },
+        "AWS WAF": {
+            "headers": ["x-amzn-requestid", "x-amz-cf-id"],
+            "server_pattern": r"awselb|amazons3|cloudfront",
+        },
+        "Akamai": {
+            "headers": ["x-akamai-transformed", "akamai-grn"],
+            "server_pattern": r"akamaighost|akamai",
+        },
+        "Imperva/Incapsula": {
+            "headers": ["x-cdn", "x-iinfo"],
+            "server_pattern": r"incapsula|imperva",
+        },
+        "Sucuri": {
+            "headers": ["x-sucuri-id", "x-sucuri-cache"],
+            "server_pattern": r"sucuri",
+        },
+        "F5 BIG-IP ASM": {
+            "headers": ["x-wa-info", "x-cnection"],
+            "server_pattern": r"bigip|f5",
+        },
+        "Barracuda": {
+            "headers": ["barra_counter_session"],
+            "server_pattern": r"barracuda",
+        },
+        "ModSecurity": {
+            "headers": [],
+            "server_pattern": r"mod_security|modsecurity",
+        },
+        "Fortinet FortiWeb": {
+            "headers": ["fortiwafsid"],
+            "server_pattern": r"fortiweb",
+        },
+        "Citrix NetScaler": {
+            "headers": ["ns_af", "citrix_ns_id"],
+            "server_pattern": r"netscaler",
+        },
+    }
+
     def is_blocked(self, response: requests.Response) -> bool:
         """Check if a response indicates a WAF block."""
         if response is None:
@@ -48,16 +93,95 @@ class WAFDetector:
         return False
 
     def identify_waf(self, response: requests.Response) -> str:
-        """Identify which WAF is blocking the request."""
+        """Identify which WAF is blocking the request.
+
+        Uses a multi-stage approach (v7.0 Titan):
+        1. Header fingerprinting — check for WAF-specific headers
+        2. Server header analysis — match server string patterns
+        3. Body/header pattern matching — regex against response content
+        4. Status code heuristic — fallback for ambiguous cases
+        """
         if response is None:
             return "Unknown"
+
+        # Stage 1: Header fingerprinting (v7.0 Titan)
+        resp_headers_lower = {
+            k.lower(): v for k, v in response.headers.items()
+        }
+        for waf_name, fp in self.WAF_HEADER_FINGERPRINTS.items():
+            for hdr in fp["headers"]:
+                if hdr.lower() in resp_headers_lower:
+                    return waf_name
+            server = resp_headers_lower.get("server", "")
+            if fp["server_pattern"] and re.search(
+                fp["server_pattern"], server, re.IGNORECASE
+            ):
+                return waf_name
+
+        # Stage 2: Body + header pattern matching
         combined = f"{response.text[:2000]} {str(response.headers)}".lower()
         for pattern, waf_name in self.BLOCK_PATTERNS:
             if re.search(pattern, combined, re.IGNORECASE):
                 return waf_name
+
         if response.status_code in self.BLOCK_STATUS_CODES:
             return "Unknown WAF (status code)"
         return "None"
+
+    def fingerprint(self, response: requests.Response) -> Dict:
+        """Return detailed WAF fingerprint information (v7.0 Titan).
+
+        Returns a dict with ``waf_name``, ``confidence``, ``detection_method``,
+        ``matched_headers``, and ``matched_patterns``.
+        """
+        result = {
+            "waf_name": "None",
+            "confidence": 0,
+            "detection_method": "none",
+            "matched_headers": [],
+            "matched_patterns": [],
+        }
+        if response is None:
+            return result
+
+        resp_headers_lower = {
+            k.lower(): v for k, v in response.headers.items()
+        }
+
+        # Check header fingerprints
+        for waf_name, fp in self.WAF_HEADER_FINGERPRINTS.items():
+            matched_hdrs = [
+                h for h in fp["headers"]
+                if h.lower() in resp_headers_lower
+            ]
+            server = resp_headers_lower.get("server", "")
+            server_match = bool(
+                fp["server_pattern"]
+                and re.search(fp["server_pattern"], server, re.IGNORECASE)
+            )
+            if matched_hdrs or server_match:
+                result["waf_name"] = waf_name
+                result["confidence"] = min(100, 50 + len(matched_hdrs) * 20 + (30 if server_match else 0))
+                result["detection_method"] = "header_fingerprint"
+                result["matched_headers"] = matched_hdrs
+                return result
+
+        # Check body patterns
+        combined = f"{response.text[:2000]} {str(response.headers)}".lower()
+        for pattern, waf_name in self.BLOCK_PATTERNS:
+            if re.search(pattern, combined, re.IGNORECASE):
+                result["waf_name"] = waf_name
+                result["confidence"] = 60
+                result["detection_method"] = "pattern_match"
+                result["matched_patterns"].append(pattern)
+                return result
+
+        if response.status_code in self.BLOCK_STATUS_CODES:
+            result["waf_name"] = "Unknown WAF (status code)"
+            result["confidence"] = 30
+            result["detection_method"] = "status_code"
+
+        return result
 
 
 class PayloadTransformer:

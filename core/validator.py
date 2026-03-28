@@ -9,6 +9,13 @@ Quantum Edition (v4.0) adds:
   distinguish real vulnerability indicators from noise.
 - Triple-marker confirmation support: validates with 3 independent markers
   instead of 2 for higher assurance.
+
+Titan Edition (v7.0) adds:
+- Robust percentile-based timing baselines: uses configurable percentile
+  (default p95) + 2*stdev instead of simple median for network-jitter-
+  resistant timing detection.
+- Adaptive sample sizing: collects more baseline samples (7 by default)
+  with outlier trimming for improved accuracy.
 """
 # For authorized security testing only.
 import math
@@ -27,6 +34,7 @@ from config import (
     VALIDATION_ATTEMPTS, MIN_CONFIDENCE, TIMING_TOLERANCE,
     QUANTUM_CROSS_CORRELATION, QUANTUM_ENTROPY_THRESHOLD,
     QUANTUM_STATISTICAL_MIN_SAMPLES,
+    ROBUST_TIMING_ENABLED, ROBUST_TIMING_PERCENTILE,
 )
 
 logger = logging.getLogger("venomstrike.validator")
@@ -120,21 +128,23 @@ class ResultValidator:
         return finding
 
     def calibrate_timing(self, url: str, method: str = "GET",
-                         samples: int = 5) -> float:
+                         samples: int = 7) -> float:
         """Measure baseline response time for timing-based detection.
 
-        Takes ``samples`` measurements (default 5), trims the highest and
-        lowest values when there are at least 5, and returns the median of
-        the remaining set.  This reduces false positives on variable-latency
-        networks compared to the previous 3-sample approach.
+        Titan v7.0 enhanced version:
+        - Collects 7 samples by default (up from 5)
+        - Trims top and bottom outliers when ≥5 samples
+        - Uses configurable percentile (default p95) instead of simple median
+          when ``ROBUST_TIMING_ENABLED`` is True
+        - Falls back to median approach when robust timing is disabled
 
         Args:
             url: The target URL.
             method: HTTP method (default GET).
-            samples: Number of timing samples to collect (default 5).
+            samples: Number of timing samples to collect (default 7).
 
         Returns:
-            The median response time in seconds.
+            The baseline response time in seconds (percentile or median).
         """
         if url in self._timing_baselines:
             return self._timing_baselines[url]
@@ -151,12 +161,34 @@ class ResultValidator:
             # Trim the highest and lowest to reduce jitter influence
             times_sorted = sorted(times)
             trimmed = times_sorted[1:-1]
-            median = statistics.median(trimmed)
-        else:
-            median = statistics.median(times) if times else 1.0
 
-        self._timing_baselines[url] = median
-        return median
+            if ROBUST_TIMING_ENABLED and len(trimmed) >= 3:
+                # Titan v7.0: percentile-based baseline
+                baseline = self._percentile(trimmed, ROBUST_TIMING_PERCENTILE)
+            else:
+                baseline = statistics.median(trimmed)
+        else:
+            baseline = statistics.median(times) if times else 1.0
+
+        self._timing_baselines[url] = baseline
+        return baseline
+
+    @staticmethod
+    def _percentile(sorted_data: List[float], pct: float) -> float:
+        """Calculate the pct-th percentile of a sorted data list.
+
+        Uses linear interpolation between adjacent data points.
+        """
+        if not sorted_data:
+            return 0.0
+        n = len(sorted_data)
+        k = (pct / 100.0) * (n - 1)
+        f = int(k)
+        c = f + 1
+        if c >= n:
+            return sorted_data[-1]
+        d = k - f
+        return sorted_data[f] + d * (sorted_data[c] - sorted_data[f])
 
     def is_timing_anomaly(self, url: str, elapsed: float,
                           sleep_seconds: float = 5.0,

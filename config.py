@@ -1,11 +1,11 @@
-"""Global configuration for VenomStrike v6.0 — Viper Edition."""
+"""Global configuration for VenomStrike v7.0 — Titan Edition."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-VERSION = "6.0.0"
-CODENAME = "Viper"
+VERSION = "7.0.0"
+CODENAME = "Titan"
 TOOL_NAME = "VenomStrike"
 AUTHOR = "Security Research Tool"
 
@@ -41,7 +41,7 @@ DEFAULT_TIMEOUT = _int_env("VS_TIMEOUT", 10, lo=1, hi=120)
 DEFAULT_THREADS = _int_env("VS_THREADS", 10, lo=1, hi=100)
 MAX_THREADS = 100
 DEFAULT_DELAY = _float_env("VS_DELAY", 0.5, lo=0.0, hi=60.0)
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/6.0-Viper; Security Testing)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/7.0-Titan; Security Testing)"
 
 # Retry / resilience
 RETRY_ATTEMPTS = _int_env("VS_RETRY_ATTEMPTS", 3, lo=0, hi=10)
@@ -65,7 +65,9 @@ MAX_CONCURRENT_REQUESTS = _int_env("VS_MAX_CONCURRENT", 50, lo=1, hi=500)
 #   full     — maximum depth: all payloads, deepest crawl, max validation
 #   quantum  — v4.0 ultra-deep: triple-marker confirmation, cross-correlation,
 #              entropy analysis, statistical confidence — maximum accuracy
-_VALID_DEPTHS = ("quick", "standard", "deep", "full", "quantum")
+#   titan    — v7.0 ultimate: all quantum features + OOB verification,
+#              payload mutation, robust timing, WAF fingerprinting
+_VALID_DEPTHS = ("quick", "standard", "deep", "full", "quantum", "titan")
 SCAN_DEPTH = os.environ.get("VS_SCAN_DEPTH", "standard").lower()
 if SCAN_DEPTH not in _VALID_DEPTHS:
     SCAN_DEPTH = "standard"
@@ -121,6 +123,23 @@ DEPTH_PRESETS = {
         "triple_confirm": True,
         "statistical_confidence": True,
     },
+    "titan": {
+        "crawl_depth": 10,
+        "max_crawl_pages": 2000,
+        "dir_brute_limit": 0,
+        "api_brute_limit": 0,
+        "payload_limit": 0,
+        "validation_attempts": 15,
+        "min_confidence": 30,
+        "cross_correlation": True,
+        "entropy_analysis": True,
+        "triple_confirm": True,
+        "statistical_confidence": True,
+        "oob_verification": True,
+        "payload_mutation": True,
+        "robust_timing": True,
+        "waf_fingerprinting": True,
+    },
 }
 
 # Confidence thresholds
@@ -139,6 +158,15 @@ QUANTUM_STATISTICAL_MIN_SAMPLES = _int_env("VS_STAT_MIN_SAMPLES", 5, lo=3, hi=20
 WAF_EVASION_ENABLED = os.environ.get("VS_WAF_EVASION", "true").lower() == "true"
 EARLY_TERMINATION = os.environ.get("VS_EARLY_TERMINATION", "true").lower() == "true"
 CONFIRMATION_ENABLED = os.environ.get("VS_CONFIRMATION", "true").lower() == "true"
+
+# Titan verification settings (v7.0)
+OOB_VERIFICATION_ENABLED = os.environ.get("VS_OOB_VERIFICATION", "true").lower() == "true"
+OOB_CALLBACK_DOMAIN = os.environ.get("VS_OOB_CALLBACK_DOMAIN", "")
+OOB_CALLBACK_TIMEOUT = _int_env("VS_OOB_CALLBACK_TIMEOUT", 10, lo=1, hi=60)
+PAYLOAD_MUTATION_ENABLED = os.environ.get("VS_PAYLOAD_MUTATION", "true").lower() == "true"
+ROBUST_TIMING_ENABLED = os.environ.get("VS_ROBUST_TIMING", "true").lower() == "true"
+ROBUST_TIMING_PERCENTILE = _float_env("VS_ROBUST_TIMING_PERCENTILE", 95.0, lo=50.0, hi=99.9)
+WAF_FINGERPRINT_ENABLED = os.environ.get("VS_WAF_FINGERPRINT", "true").lower() == "true"
 
 # Database
 DB_PATH = os.environ.get("VS_DB_PATH", os.path.join(os.path.dirname(__file__), "venomstrike.db"))
