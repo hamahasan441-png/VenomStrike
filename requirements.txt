@@ -1,4 +1,4 @@
-# VenomStrike v2.0.0 — Dependencies
+# VenomStrike v3.0.0 — Dependencies
 # Core Web Framework
 flask>=3.1.0
 flask-socketio>=5.5.0

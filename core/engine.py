@@ -11,6 +11,7 @@ from core.database import create_scan, save_finding, update_scan_status, init_db
 from core.reporter import generate_html_report, generate_json_report, calculate_security_score
 from config import (
     DEFAULT_THREADS, MIN_CONFIDENCE, CVE_ENRICH_LIMIT, MODULE_TIMEOUT,
+    SCAN_DEPTH, DEPTH_PRESETS,
     NMAP_ENABLED, NMAP_PATH,
     SHODAN_API_KEY,
     ZAP_ENABLED, ZAP_API_KEY, ZAP_PROXY,
@@ -22,12 +23,14 @@ from config import (
 class ScanEngine:
     def __init__(self, session_manager=None, threads: int = DEFAULT_THREADS, 
                  learning_mode: bool = False, callback=None,
-                 enable_integrations: bool = True):
+                 enable_integrations: bool = True, depth: str = None):
         self.session_manager = session_manager
         self.threads = threads
         self.learning_mode = learning_mode
         self.callback = callback
         self.enable_integrations = enable_integrations
+        self.depth = depth or SCAN_DEPTH
+        self.depth_preset = DEPTH_PRESETS.get(self.depth, DEPTH_PRESETS["standard"])
         self.findings = []
         self.scan_id = None
         self._lock = threading.Lock()
@@ -143,7 +146,7 @@ class ScanEngine:
         })
         
         if self.callback:
-            self.callback("status", {"message": f"Starting {mode} scan...", "scan_id": self.scan_id})
+            self.callback("status", {"message": f"Starting {mode} scan (depth={self.depth})...", "scan_id": self.scan_id})
         
         session = self._get_session()
         target = Target(target_url, session=session)
@@ -236,7 +239,7 @@ class ScanEngine:
         """Run reconnaissance modules."""
         try:
             from recon.endpoint_discovery import EndpointDiscovery
-            ed = EndpointDiscovery(target, target.session)
+            ed = EndpointDiscovery(target, target.session, depth_preset=self.depth_preset)
             endpoints = ed.discover()
             log_info(f"Discovered {len(endpoints)} endpoints")
             return endpoints

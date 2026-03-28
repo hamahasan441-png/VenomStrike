@@ -51,6 +51,8 @@ Examples:
   python venom.py -u https://target.com --mode sqli --cookie "session=abc123"
   python venom.py -u https://target.com --mode xss --proxy http://127.0.0.1:8080
   python venom.py -u https://target.com --mode all --learn --report html
+  python venom.py -u https://target.com --mode auto --depth deep
+  python venom.py -u https://target.com --mode auto --depth full --threads 50
 
 ⚠️  FOR AUTHORIZED TESTING ONLY — Ensure you have written permission
         """
@@ -84,6 +86,11 @@ Examples:
     parser.add_argument("--threads", type=int, default=10, help="Number of threads (1-100, default: 10)")
     parser.add_argument("--timeout", type=int, default=10, help="Request timeout in seconds (1-120)")
     parser.add_argument("--delay", type=float, default=0, help="Delay between requests (seconds, 0-60)")
+    parser.add_argument(
+        "--depth", default="standard",
+        choices=["quick", "standard", "deep", "full"],
+        help="Scan depth: quick (surface), standard (default), deep (thorough), full (maximum)"
+    )
     
     # Output options
     parser.add_argument("--report", choices=["html", "json", "both", "none"], default="both", help="Report format")
@@ -192,11 +199,13 @@ def main():
         threads=threads,
         learning_mode=args.learn,
         enable_integrations=not args.no_integrations,
+        depth=args.depth,
     )
     _active_engine = engine
     
     log_info(f"Target: {target_url}")
     log_info(f"Mode: {args.mode}")
+    log_info(f"Depth: {args.depth}")
     log_info(f"Threads: {threads}")
     
     # Show active integrations

@@ -1,10 +1,10 @@
-"""Global configuration for VenomStrike v2.0."""
+"""Global configuration for VenomStrike v3.0."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-VERSION = "2.0.0"
+VERSION = "3.0.0"
 TOOL_NAME = "VenomStrike"
 AUTHOR = "Security Research Tool"
 
@@ -40,7 +40,7 @@ DEFAULT_TIMEOUT = _int_env("VS_TIMEOUT", 10, lo=1, hi=120)
 DEFAULT_THREADS = _int_env("VS_THREADS", 10, lo=1, hi=100)
 MAX_THREADS = 100
 DEFAULT_DELAY = _float_env("VS_DELAY", 0.5, lo=0.0, hi=60.0)
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/2.0; Security Testing)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/3.0; Security Testing)"
 
 # Retry / resilience
 RETRY_ATTEMPTS = _int_env("VS_RETRY_ATTEMPTS", 3, lo=0, hi=10)
@@ -55,6 +55,57 @@ MODULE_TIMEOUT = _int_env("VS_MODULE_TIMEOUT", 300, lo=0, hi=3600)
 # Async scanning settings
 ASYNC_ENABLED = os.environ.get("VS_ASYNC", "true").lower() == "true"
 MAX_CONCURRENT_REQUESTS = _int_env("VS_MAX_CONCURRENT", 50, lo=1, hi=500)
+
+# ── Scan depth ──────────────────────────────────────────────────
+# Controls how thorough each scan phase is. Allowed values:
+#   quick    — fast surface-level scan (less payloads, shallow crawl)
+#   standard — balanced depth (default, same behaviour as v2)
+#   deep     — more payloads, deeper crawl, higher validation
+#   full     — maximum depth: all payloads, deepest crawl, max validation
+_VALID_DEPTHS = ("quick", "standard", "deep", "full")
+SCAN_DEPTH = os.environ.get("VS_SCAN_DEPTH", "standard").lower()
+if SCAN_DEPTH not in _VALID_DEPTHS:
+    SCAN_DEPTH = "standard"
+
+# Depth presets — tunable knobs derived from depth level
+DEPTH_PRESETS = {
+    "quick": {
+        "crawl_depth": 1,
+        "max_crawl_pages": 20,
+        "dir_brute_limit": 50,
+        "api_brute_limit": 25,
+        "payload_limit": 5,
+        "validation_attempts": 1,
+        "min_confidence": 80,
+    },
+    "standard": {
+        "crawl_depth": 2,
+        "max_crawl_pages": 50,
+        "dir_brute_limit": 100,
+        "api_brute_limit": 50,
+        "payload_limit": 15,
+        "validation_attempts": 3,
+        "min_confidence": 70,
+    },
+    "deep": {
+        "crawl_depth": 3,
+        "max_crawl_pages": 150,
+        "dir_brute_limit": 250,
+        "api_brute_limit": 120,
+        "payload_limit": 30,
+        "validation_attempts": 5,
+        "min_confidence": 60,
+    },
+    "full": {
+        "crawl_depth": 5,
+        "max_crawl_pages": 500,
+        "dir_brute_limit": 0,  # 0 = unlimited (use full wordlist)
+        "api_brute_limit": 0,
+        "payload_limit": 0,
+        "validation_attempts": 7,
+        "min_confidence": 50,
+    },
+}
 
 # Confidence thresholds
 MIN_CONFIDENCE = _int_env("VS_MIN_CONFIDENCE", 70, lo=0, hi=100)

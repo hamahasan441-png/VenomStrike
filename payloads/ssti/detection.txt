@@ -6,3 +6,15 @@ ${7*7}
 {{7*'7'}}
 @(7*7)
 *{7*7}
+#set($x=7*7)${x}
+${T(java.lang.Runtime).getRuntime()}
+{php}echo 7*7;{/php}
+<%=7*7%>
+{7*7}
+{{=7*7}}
+#{7*7}
+<#assign x=7*7>${x}
+[[${7*7}]]
+${7*7}
+{{config}}
+p]hpinfo()
