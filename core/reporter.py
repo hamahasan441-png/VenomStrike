@@ -215,9 +215,9 @@ pre {{ background: #0d0d0d; padding: 10px; border: 1px solid #333; border-radius
 </style>
 </head>
 <body>
-<h1>&#128481; VenomStrike Security Report</h1>
+<h1>&#128481;<!-- sword emoji --> VenomStrike Security Report</h1>
 <div class="disclaimer">
-&#9888;&#65039; This report is for authorized security testing only. Handle with care.
+&#9888;&#65039;<!-- warning emoji --> This report is for authorized security testing only. Handle with care.
 </div>
 <div class="summary">
     <h2>Executive Summary</h2>

@@ -116,16 +116,30 @@ def capture_request_trace(
     resp_hash = hashlib.md5(
         f"{response.status_code}{len(response.content)}{snippet}".encode()
     ).hexdigest()
+
+    # Calculate elapsed time clearly
+    if elapsed:
+        elapsed_secs = elapsed
+    elif hasattr(response, "elapsed") and response.elapsed:
+        elapsed_secs = response.elapsed.total_seconds()
+    else:
+        elapsed_secs = 0.0
+
+    # Extract method/url from request if not provided
+    req_method = method or (response.request.method if response.request else "")
+    req_url = url or (response.request.url if response.request else "")
+    req_headers = dict(response.request.headers) if response.request else {}
+
     return RequestTrace(
-        method=method or response.request.method if response.request else "",
-        url=url or (response.request.url if response.request else ""),
-        headers=dict(response.request.headers) if response.request else {},
+        method=req_method,
+        url=req_url,
+        headers=req_headers,
         body=body,
         status_code=response.status_code,
         response_length=len(response.content),
         response_snippet=snippet,
         response_hash=resp_hash,
-        elapsed_seconds=elapsed or response.elapsed.total_seconds() if hasattr(response, 'elapsed') else 0.0,
+        elapsed_seconds=elapsed_secs,
     )
 
 
