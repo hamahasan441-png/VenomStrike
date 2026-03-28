@@ -224,6 +224,20 @@ def learning():
     return render_template("learning.html")
 
 
+@app.route("/api/integrations")
+def api_integrations():
+    """Show available tool integrations and their status."""
+    from config import NMAP_ENABLED, SHODAN_API_KEY, ZAP_ENABLED, NUCLEI_ENABLED, NVD_API_KEY
+    integrations = {
+        "nmap": {"enabled": NMAP_ENABLED, "description": "Network port scanning & service detection"},
+        "shodan": {"enabled": bool(SHODAN_API_KEY), "description": "Passive host reconnaissance"},
+        "zap": {"enabled": ZAP_ENABLED, "description": "OWASP ZAP automated scanning"},
+        "nuclei": {"enabled": NUCLEI_ENABLED, "description": "Template-based vulnerability scanning"},
+        "cve_lookup": {"enabled": bool(NVD_API_KEY), "description": "CVE/NVD vulnerability enrichment"},
+    }
+    return jsonify({"integrations": integrations})
+
+
 @app.route("/learning/<vuln_type>")
 def learning_detail(vuln_type):
     try:
