@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel>=0.41.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "venomstrike"
+version = "2.0.0"
+description = "Advanced Security Testing & Vulnerability Debugging Framework — Educational Tool"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "VenomStrike Contributors"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "flask>=3.1.0",
+    "flask-socketio>=5.5.0",
+    "flask-wtf>=1.2.2",
+    "requests>=2.32.0",
+    "rich>=13.9.0",
+    "beautifulsoup4>=4.12.3",
+    "lxml>=5.3.0",
+    "pyjwt>=2.10.0",
+    "paramiko>=3.5.0",
+    "dnspython>=2.7.0",
+    "sqlalchemy>=2.0.36",
+    "cryptography>=44.0.0",
+    "colorama>=0.4.6",
+    "python-dotenv>=1.0.1",
+    "tqdm>=4.67.0",
+    "aiohttp>=3.11.0",
+    "websocket-client>=1.8.0",
+    "defusedxml>=0.7.1",
+    "bleach>=6.2.0",
+    "pyyaml>=6.0.2",
+    "jinja2>=3.1.5",
+    "python-nmap>=0.7.1",
+    "shodan>=1.31.0",
+    "httpx>=0.28.0",
+    "marshmallow>=3.23.0",
+    "click>=8.1.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+]
+full = [
+    "python-nmap>=0.7.1",
+    "shodan>=1.31.0",
+]
+
+[project.scripts]
+venomstrike = "venom:main"
+venomstrike-web = "run:main"
+
+[project.urls]
+Homepage = "https://github.com/hamahasan441-png/VenomStrike"
+Repository = "https://github.com/hamahasan441-png/VenomStrike"
+
+[tool.setuptools.packages.find]
+include = ["core*", "exploits*", "recon*", "debugger*", "integrations*", "payloads*", "wordlists*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
