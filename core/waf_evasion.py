@@ -136,11 +136,14 @@ class PayloadTransformer:
         ws = random.choice(alternatives)
         return payload.replace(" ", ws)
 
+    # Characters that receive hex encoding in SQL contexts
+    HEX_ENCODE_CHARS = frozenset("'\" =();-")
+
     def _apply_hex_encode(self, payload: str) -> str:
         """Hex-encode special characters (e.g., ' → 0x27) for SQL contexts."""
         result = []
         for ch in payload:
-            if ch in ("'", '"', " ", "=", "(", ")", ";", "-"):
+            if ch in self.HEX_ENCODE_CHARS:
                 result.append(f"0x{ord(ch):02x}")
             else:
                 result.append(ch)
