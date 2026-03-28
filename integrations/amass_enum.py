@@ -18,7 +18,7 @@ class AmassEnum:
     Amass performs DNS enumeration, scraping, and brute-force to discover
     subdomains of a target domain.  It must be installed separately.
 
-    For authorised security testing only.
+    For authorized security testing only.
     """
 
     def __init__(self, binary_path: str = None):

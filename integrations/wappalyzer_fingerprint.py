@@ -22,7 +22,7 @@ class WappalyzerFingerprint:
     or API — it ships with built-in signatures for the most common
     technologies.
 
-    For authorised security testing only.
+    For authorized security testing only.
     """
 
     # ------------------------------------------------------------------
