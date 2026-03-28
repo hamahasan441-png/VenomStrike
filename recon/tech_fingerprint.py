@@ -22,6 +22,7 @@ class TechFingerprint:
             "framework": self._detect_framework(response),
             "cms": self._detect_cms(response),
             "waf": self._detect_waf(response),
+            "database": self._detect_database(response),
             "headers": dict(response.headers) if response else {},
         }
         log_info(f"Tech stack: {result}")
@@ -115,3 +116,23 @@ class TechFingerprint:
                 if pat.lower() in header_str:
                     return waf
         return "None detected"
+
+    def _detect_database(self, response: requests.Response) -> str:
+        """Detect the likely database backend from response indicators."""
+        if response is None:
+            return "Unknown"
+        text = f"{response.text[:3000]} {str(response.headers)}"
+        db_patterns = {
+            "MySQL": [r"mysql", r"MariaDB", r"MYSQL_", r"mysqli"],
+            "PostgreSQL": [r"postgresql", r"pg_", r"pgsql", r"Npgsql"],
+            "MSSQL": [r"sql\s*server", r"mssql", r"sqlsrv", r"System\.Data\.SqlClient"],
+            "SQLite": [r"sqlite", r"SQLITE_"],
+            "Oracle": [r"oracle", r"ORA-\d{4,5}"],
+            "MongoDB": [r"mongodb", r"mongoose", r"MongoError"],
+            "Redis": [r"redis", r"WRONGTYPE"],
+        }
+        for db, patterns in db_patterns.items():
+            for pat in patterns:
+                if re.search(pat, text, re.IGNORECASE):
+                    return db
+        return "Unknown"
