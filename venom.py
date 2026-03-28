@@ -9,6 +9,7 @@ Usage:
     python venom.py -u https://target.com --mode xss --cookie "session=abc"
 """
 import argparse
+import signal
 import sys
 import os
 
@@ -24,6 +25,19 @@ from core.session import SessionManager
 from core.engine import ScanEngine
 from core.reporter import generate_html_report, generate_json_report
 from config import LEGAL_DISCLAIMER, VERSION
+
+# Global engine reference for graceful shutdown via Ctrl+C
+_active_engine: ScanEngine = None
+
+
+def _handle_sigint(signum, frame):
+    """Handle Ctrl+C by cancelling the active scan gracefully."""
+    global _active_engine
+    if _active_engine is not None:
+        _active_engine.cancel()
+    else:
+        log_warning("Interrupted — exiting.")
+        sys.exit(130)
 
 
 def parse_args():
@@ -67,9 +81,9 @@ Examples:
     parser.add_argument("--auth-pass", default="", help="HTTP Basic auth password")
     
     # Scan options
-    parser.add_argument("--threads", type=int, default=10, help="Number of threads (default: 10)")
-    parser.add_argument("--timeout", type=int, default=10, help="Request timeout in seconds")
-    parser.add_argument("--delay", type=float, default=0, help="Delay between requests (seconds)")
+    parser.add_argument("--threads", type=int, default=10, help="Number of threads (1-100, default: 10)")
+    parser.add_argument("--timeout", type=int, default=10, help="Request timeout in seconds (1-120)")
+    parser.add_argument("--delay", type=float, default=0, help="Delay between requests (seconds, 0-60)")
     
     # Output options
     parser.add_argument("--report", choices=["html", "json", "both", "none"], default="both", help="Report format")
@@ -92,8 +106,12 @@ Examples:
 
 
 def main():
+    global _active_engine
     print_banner()
     args = parse_args()
+    
+    # Register graceful shutdown handler
+    signal.signal(signal.SIGINT, _handle_sigint)
     
     log_info(f"VenomStrike v{VERSION}")
     
@@ -102,6 +120,17 @@ def main():
     if not valid:
         log_error(f"Invalid target URL: {target_url}")
         sys.exit(1)
+    
+    # Validate numeric inputs
+    threads = max(1, min(100, args.threads))
+    if threads != args.threads:
+        log_warning(f"Threads clamped to {threads} (valid range: 1-100)")
+    timeout = max(1, min(120, args.timeout))
+    if timeout != args.timeout:
+        log_warning(f"Timeout clamped to {timeout}s (valid range: 1-120)")
+    delay = max(0.0, min(60.0, args.delay))
+    if delay != args.delay:
+        log_warning(f"Delay clamped to {delay}s (valid range: 0-60)")
     
     # Authorization check
     if not args.no_auth_check:
@@ -160,14 +189,15 @@ def main():
 
     engine = ScanEngine(
         session_manager=session_mgr,
-        threads=args.threads,
+        threads=threads,
         learning_mode=args.learn,
         enable_integrations=not args.no_integrations,
     )
+    _active_engine = engine
     
     log_info(f"Target: {target_url}")
     log_info(f"Mode: {args.mode}")
-    log_info(f"Threads: {args.threads}")
+    log_info(f"Threads: {threads}")
     
     # Show active integrations
     active_integrations = engine.get_integrations()

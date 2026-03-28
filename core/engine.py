@@ -3,14 +3,14 @@
 import uuid
 import time
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
 from typing import List, Dict, Optional
 from core.logger import log_info, log_success, log_error, log_warning, log_module
 from core.target import Target
 from core.database import create_scan, save_finding, update_scan_status, init_db
 from core.reporter import generate_html_report, generate_json_report, calculate_security_score
 from config import (
-    DEFAULT_THREADS, MIN_CONFIDENCE, CVE_ENRICH_LIMIT,
+    DEFAULT_THREADS, MIN_CONFIDENCE, CVE_ENRICH_LIMIT, MODULE_TIMEOUT,
     NMAP_ENABLED, NMAP_PATH,
     SHODAN_API_KEY,
     ZAP_ENABLED, ZAP_API_KEY, ZAP_PROXY,
@@ -32,9 +32,16 @@ class ScanEngine:
         self.scan_id = None
         self._lock = threading.Lock()
         self._integrations = {}
+        self._cancelled = False
         init_db()
         if enable_integrations:
             self._init_integrations()
+
+    # ── Graceful shutdown ──────────────────────────────────────────
+    def cancel(self):
+        """Signal the engine to stop processing new modules."""
+        self._cancelled = True
+        log_warning("Scan cancellation requested — finishing current modules…")
     
     def _init_integrations(self):
         """Initialize available tool integrations."""
@@ -156,18 +163,26 @@ class ScanEngine:
         log_info("Phase 2: Exploitation")
         modules = self._get_modules(mode, category, module)
         
+        module_timeout = MODULE_TIMEOUT if MODULE_TIMEOUT > 0 else None
         with ThreadPoolExecutor(max_workers=self.threads) as executor:
-            futures = []
+            futures = {}
             for mod_name, mod_func in modules:
+                if self._cancelled:
+                    break
                 future = executor.submit(
                     self._run_module_safe, mod_name, mod_func, target, endpoints, config
                 )
-                futures.append(future)
-            for future in as_completed(futures):
+                futures[future] = mod_name
+            for future in as_completed(futures, timeout=module_timeout):
+                if self._cancelled:
+                    break
+                mod_name = futures[future]
                 try:
-                    future.result()
+                    future.result(timeout=0)
+                except FuturesTimeoutError:
+                    log_warning(f"Module {mod_name} timed out after {module_timeout}s")
                 except Exception as e:
-                    log_error(f"Module error: {e}")
+                    log_error(f"Module {mod_name} error: {e}")
         
         # Phase 3: Verification — deduplicate and verify findings
         log_info("Phase 3: Verification & Deduplication")

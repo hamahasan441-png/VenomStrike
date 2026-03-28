@@ -410,3 +410,110 @@ class FalsePositiveFilter:
             f"{response.status_code}{len(response.content)}".encode()
         ).hexdigest()
         return current_hash != baseline_hash and response.status_code == 200
+
+    # ── CRLF Injection ────────────────────────────────────────────
+
+    def check_crlf_detailed(self, baseline_resp: requests.Response,
+                            payload_resp: requests.Response,
+                            expected_header: str = "X-Venom") -> Dict:
+        """Verify CRLF injection by checking raw headers for injected header."""
+        result = {"is_real": False, "reason": "", "proof_data": {}}
+        if payload_resp is None:
+            result["reason"] = "No response received"
+            return result
+
+        # Check if the expected header appears in the payload response
+        has_header = expected_header.lower() in {
+            k.lower() for k in payload_resp.headers
+        }
+        baseline_has = baseline_resp and expected_header.lower() in {
+            k.lower() for k in baseline_resp.headers
+        }
+
+        if has_header and not baseline_has:
+            result["is_real"] = True
+            result["reason"] = (
+                f"Injected header '{expected_header}' found in payload response "
+                f"but NOT in baseline response headers"
+            )
+            result["proof_data"] = {
+                "injected_header": True,
+                "injected_header_name": expected_header,
+                "baseline_missing_pattern": True,
+            }
+        elif has_header and baseline_has:
+            result["reason"] = f"Header '{expected_header}' exists in both baseline and payload"
+        else:
+            result["reason"] = f"Header '{expected_header}' not found in payload response"
+
+        return result
+
+    # ── XXE (XML External Entity) ─────────────────────────────────
+
+    XXE_INDICATORS = [
+        (r"root:.*:0:0:", "Unix /etc/passwd via XXE"),
+        (r"\[boot loader\]", "Windows boot.ini via XXE"),
+        (r"<!\[CDATA\[", "CDATA section (possible XXE processing)"),
+    ]
+
+    def check_xxe_detailed(self, baseline_resp: requests.Response,
+                           payload_resp: requests.Response) -> Dict:
+        """Verify XXE by checking for file content indicators."""
+        result = {"is_real": False, "reason": "", "proof_data": {}}
+        if payload_resp is None:
+            result["reason"] = "No response received"
+            return result
+
+        for pattern, description in self.XXE_INDICATORS:
+            match = re.search(pattern, payload_resp.text, re.IGNORECASE)
+            if match:
+                baseline_has = baseline_resp and re.search(
+                    pattern, baseline_resp.text, re.IGNORECASE
+                )
+                if not baseline_has:
+                    result["is_real"] = True
+                    result["reason"] = (
+                        f"XXE indicator '{description}' ({match.group()[:60]}) "
+                        f"found in payload response but NOT in baseline"
+                    )
+                    result["proof_data"] = {
+                        "xxe_content": match.group()[:100],
+                        "indicator": description,
+                        "baseline_missing_pattern": True,
+                    }
+                    return result
+
+        result["reason"] = "No XXE indicators found in response"
+        return result
+
+    # ── Open Redirect ─────────────────────────────────────────────
+
+    def check_open_redirect_detailed(self, payload_resp: requests.Response,
+                                     injected_domain: str) -> Dict:
+        """Verify open redirect by checking Location header."""
+        result = {"is_real": False, "reason": "", "proof_data": {}}
+        if payload_resp is None:
+            result["reason"] = "No response received"
+            return result
+
+        location = payload_resp.headers.get("Location", "")
+        if injected_domain.lower() in location.lower():
+            result["is_real"] = True
+            result["reason"] = (
+                f"Redirect Location header contains injected domain "
+                f"'{injected_domain}': {location}"
+            )
+            result["proof_data"] = {
+                "redirect_injection": True,
+                "injected_domain": injected_domain,
+                "location_header": location,
+            }
+        elif payload_resp.status_code in (301, 302, 303, 307, 308):
+            result["reason"] = (
+                f"Redirect detected but Location '{location}' does not "
+                f"contain injected domain '{injected_domain}'"
+            )
+        else:
+            result["reason"] = f"No redirect (status {payload_resp.status_code})"
+
+        return result
