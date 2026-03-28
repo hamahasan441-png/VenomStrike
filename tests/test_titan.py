@@ -711,3 +711,28 @@ class TestInputValidation:
             for vtype in KNOWN:
                 resp = client.get(f"/learning/{vtype}")
                 assert resp.status_code == 200, f"Failed for vuln type: {vtype}"
+
+    def test_learning_route_rejects_special_characters(self):
+        """Special characters in vuln_type should be rejected."""
+        from app import app
+        app.config["TESTING"] = True
+        app.config["WTF_CSRF_ENABLED"] = False
+        with app.test_client() as client:
+            for bad_input in ["<script>alert(1)</script>", "sql' OR 1=1--",
+                              "../etc/passwd", "a" * 500]:
+                resp = client.get(f"/learning/{bad_input}")
+                assert resp.status_code in (400, 404), (
+                    f"Should reject: {bad_input!r}"
+                )
+
+    def test_learning_route_rejects_empty_like_values(self):
+        """Unusual but valid URL paths that aren't real vuln types."""
+        from app import app
+        app.config["TESTING"] = True
+        app.config["WTF_CSRF_ENABLED"] = False
+        with app.test_client() as client:
+            for bad_input in ["SQLI", "Sqli", "sql_injection", "unknown"]:
+                resp = client.get(f"/learning/{bad_input}")
+                assert resp.status_code == 400, (
+                    f"Should reject case/name variant: {bad_input!r}"
+                )
