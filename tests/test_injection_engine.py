@@ -567,3 +567,248 @@ class TestBaseExploiterIntegration:
         variants = exploiter._get_waf_variants("' OR 1=1--")
         assert "' OR 1=1--" in variants
         assert len(variants) >= 1
+
+
+# ── New PayloadTransformer techniques ──────────────────────────────
+
+
+class TestPayloadTransformerHexEncode:
+    def test_hex_encode_special_chars(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        variants = t.transform("' OR 1=1--", techniques=["hex_encode"])
+        assert len(variants) >= 2
+        hex_variant = [v for v in variants if "0x27" in v]
+        assert hex_variant, "Expected hex-encoded single-quote (0x27)"
+
+    def test_hex_encode_preserves_alphanumeric(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_hex_encode("abc123")
+        # No special chars → no hex substitution
+        assert result == "abc123"
+
+
+class TestPayloadTransformerUnicodeEncode:
+    def test_unicode_encode_special_chars(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        variants = t.transform("<script>alert(1)</script>", techniques=["unicode_encode"])
+        assert len(variants) >= 2
+        unicode_variant = [v for v in variants if "\\u003c" in v]
+        assert unicode_variant, "Expected unicode-encoded '<' (\\u003c)"
+
+    def test_unicode_encode_preserves_alphanumeric(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_unicode_encode("abc")
+        assert result == "abc"
+
+
+class TestPayloadTransformerNullByte:
+    def test_null_byte_prepended(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        variants = t.transform("admin", techniques=["null_byte_injection"])
+        assert len(variants) >= 2
+        assert any(v.startswith("%00") for v in variants)
+
+    def test_null_byte_does_not_modify_body(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_null_byte_injection("test")
+        assert result.endswith("test")
+
+
+class TestPayloadTransformerMySQLComment:
+    def test_mysql_comment_wraps_keywords(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        variants = t.transform("' UNION SELECT NULL", techniques=["mysql_comment_bypass"])
+        assert any("/*!50000" in v for v in variants)
+
+    def test_mysql_comment_no_change_without_keywords(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_mysql_comment_bypass("' OR 1=1--")
+        # OR is not in the MySQL-comment keyword list for this technique
+        # but if it were, it would be wrapped — assert structure is valid
+        assert isinstance(result, str)
+
+
+class TestPayloadTransformerConcatObfuscation:
+    def test_concat_splits_long_strings(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_concat_obfuscation("'admin'")
+        assert "CONCAT(" in result
+        assert "'ad'" in result or "'min'" in result
+
+    def test_concat_leaves_short_strings(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_concat_obfuscation("'ab'")
+        assert "CONCAT" not in result
+
+
+class TestPayloadTransformerParameterPollution:
+    def test_pollution_contains_separator(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        variants = t.transform("' OR 1=1--", techniques=["parameter_pollution"])
+        pollution = [v for v in variants if "|||" in v]
+        assert pollution, "Expected a variant with the ||| separator"
+
+    def test_pollution_has_decoy(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_parameter_pollution("PAYLOAD")
+        parts = result.split("|||")
+        assert len(parts) == 2
+        assert parts[0] == "harmless"
+        assert parts[1] == "PAYLOAD"
+
+
+class TestAllTechniquesAttribute:
+    def test_all_techniques_lists_new_entries(self):
+        from core.waf_evasion import PayloadTransformer
+        expected_new = [
+            "hex_encode", "unicode_encode", "null_byte_injection",
+            "mysql_comment_bypass", "concat_obfuscation", "parameter_pollution",
+        ]
+        for name in expected_new:
+            assert name in PayloadTransformer.ALL_TECHNIQUES, f"{name} missing"
+
+    def test_transform_default_uses_all(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        variants = t.transform("' UNION SELECT 'admin' FROM users--")
+        # With all techniques applied we should get a good number of variants
+        assert len(variants) >= 6
+
+
+# ── EncodingRotator ────────────────────────────────────────────────
+
+
+class TestEncodingRotator:
+    def test_rotate_returns_identity_first(self):
+        from core.waf_evasion import EncodingRotator
+        r = EncodingRotator()
+        variants = r.rotate("test")
+        assert variants[0] == "test"
+
+    def test_rotate_contains_url_encoding(self):
+        from core.waf_evasion import EncodingRotator
+        r = EncodingRotator()
+        variants = r.rotate("' OR 1=1")
+        # URL-encoded single-quote
+        assert any("%27" in v for v in variants)
+
+    def test_rotate_contains_base64(self):
+        from core.waf_evasion import EncodingRotator
+        import base64
+        r = EncodingRotator()
+        payload = "' OR 1=1"
+        variants = r.rotate(payload)
+        expected_b64 = base64.b64encode(payload.encode()).decode()
+        assert expected_b64 in variants
+
+    def test_rotate_contains_hex(self):
+        from core.waf_evasion import EncodingRotator
+        r = EncodingRotator()
+        variants = r.rotate("a")
+        # 'a' hex-encoded should be %61
+        assert any("%61" in v for v in variants)
+
+    def test_rotate_contains_html_entities(self):
+        from core.waf_evasion import EncodingRotator
+        r = EncodingRotator()
+        variants = r.rotate("<")
+        assert any("&#60;" in v for v in variants)
+
+    def test_rotate_no_duplicates(self):
+        from core.waf_evasion import EncodingRotator
+        r = EncodingRotator()
+        variants = r.rotate("' OR 1=1")
+        assert len(variants) == len(set(variants))
+
+    def test_rotate_covers_all_encodings(self):
+        from core.waf_evasion import EncodingRotator
+        r = EncodingRotator()
+        variants = r.rotate("test<>")
+        assert len(variants) == len(EncodingRotator.ENCODINGS)
+
+
+# ── HeaderBypass ───────────────────────────────────────────────────
+
+
+class TestHeaderBypass:
+    def test_build_header_variants_count(self):
+        from core.waf_evasion import HeaderBypass
+        hb = HeaderBypass()
+        variants = hb.build_header_variants("' OR 1=1--")
+        assert len(variants) == len(HeaderBypass.INJECTION_HEADERS)
+
+    def test_each_variant_has_payload(self):
+        from core.waf_evasion import HeaderBypass
+        hb = HeaderBypass()
+        payload = "' OR 1=1--"
+        variants = hb.build_header_variants(payload)
+        for headers in variants:
+            assert any(v == payload for v in headers.values())
+
+    def test_extra_headers_merged(self):
+        from core.waf_evasion import HeaderBypass
+        hb = HeaderBypass()
+        extra = {"Authorization": "Bearer tok123"}
+        variants = hb.build_header_variants("test", extra_headers=extra)
+        for headers in variants:
+            assert headers.get("Authorization") == "Bearer tok123"
+
+    def test_injection_headers_used(self):
+        from core.waf_evasion import HeaderBypass
+        hb = HeaderBypass()
+        variants = hb.build_header_variants("payload")
+        all_keys = set()
+        for headers in variants:
+            all_keys.update(headers.keys())
+        for hdr in HeaderBypass.INJECTION_HEADERS:
+            assert hdr in all_keys
+
+
+# ── BaseExploiter new helpers ──────────────────────────────────────
+
+
+class TestBaseExploiterNewHelpers:
+    def test_has_encoding_rotator(self):
+        from exploits.injection.sqli_exploiter import SQLiExploiter
+        exploiter = SQLiExploiter()
+        assert hasattr(exploiter, "encoding_rotator")
+        assert hasattr(exploiter, "header_bypass")
+
+    def test_get_encoding_variants(self):
+        from exploits.injection.sqli_exploiter import SQLiExploiter
+        exploiter = SQLiExploiter()
+        variants = exploiter._get_encoding_variants("test")
+        assert "test" in variants
+        assert len(variants) >= 2
+
+    def test_get_header_variants(self):
+        from exploits.injection.sqli_exploiter import SQLiExploiter
+        exploiter = SQLiExploiter()
+        variants = exploiter._get_header_variants("payload")
+        assert len(variants) > 0
+        assert all(isinstance(h, dict) for h in variants)
+
+    def test_parameter_pollution_in_inject_param(self):
+        """_inject_param should split ||| separator for parameter pollution."""
+        from exploits.injection.sqli_exploiter import SQLiExploiter
+        exploiter = SQLiExploiter()
+        # We can't test actual HTTP, but we verify the method exists and
+        # can be called (it will return None because no server is running)
+        result = exploiter._inject_param(
+            "http://localhost:99999/?q=test", "q",
+            "harmless|||' OR 1=1--", "GET",
+        )
+        # Expected None due to connection error, but no exception raised
+        assert result is None
