@@ -2,57 +2,64 @@
 {% block title %}Scan History — VenomStrike{% endblock %}
 {% block content %}
 <div class="history-container">
-    <h1>📋 Scan History</h1>
+    <div class="page-header">
+        <h1><span class="page-icon">📊</span> Scan History</h1>
+        <a href="/" class="btn btn-primary btn-sm"><span class="btn-icon">⚡</span> New Scan</a>
+    </div>
     
     {% if not scans %}
-    <div class="empty-state">
+    <div class="empty-state glass-card">
         <span class="empty-icon">📭</span>
-        <p>No scans yet. <a href="/">Start your first scan</a></p>
+        <h3>No Scans Yet</h3>
+        <p>Start your first security scan to see results here.</p>
+        <a href="/" class="btn btn-primary"><span class="btn-icon">⚡</span> Start Scanning</a>
     </div>
     {% else %}
-    <div class="history-table-wrapper">
-        <table class="history-table">
-            <thead>
-                <tr>
-                    <th>Target</th>
-                    <th>Status</th>
-                    <th>Critical</th>
-                    <th>High</th>
-                    <th>Medium</th>
-                    <th>Score</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for scan in scans %}
-                <tr class="scan-row">
-                    <td class="scan-target">
-                        <span class="target-url">{{ scan.target[:50] }}{% if scan.target|length > 50 %}...{% endif %}</span>
-                    </td>
-                    <td><span class="status-badge status-{{ scan.status }}">{{ scan.status }}</span></td>
-                    <td><span class="count critical">{{ scan.summary.get('critical', 0) }}</span></td>
-                    <td><span class="count high">{{ scan.summary.get('high', 0) }}</span></td>
-                    <td><span class="count medium">{{ scan.summary.get('medium', 0) }}</span></td>
-                    <td>
-                        {% set score = scan.summary.get('security_score', '-') %}
-                        <span class="score {% if score != '-' %}{% if score >= 80 %}score-good{% elif score >= 50 %}score-medium{% else %}score-bad{% endif %}{% endif %}">
-                            {{ score }}{% if score != '-' %}/100{% endif %}
-                        </span>
-                    </td>
-                    <td class="scan-date">{{ scan.started_at|int|strftime }}</td>
-                    <td class="scan-actions">
-                        <a href="/results/{{ scan.id }}" class="btn btn-small">View</a>
-                        <a href="/report/{{ scan.id }}/html" class="btn btn-small btn-secondary">Report</a>
-                        <form method="POST" action="/scan/{{ scan.id }}/delete" style="display:inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('Delete this scan?')">Del</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="card glass-card">
+        <div class="history-table-wrapper">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Status</th>
+                        <th>Critical</th>
+                        <th>High</th>
+                        <th>Medium</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scan in scans %}
+                    <tr class="scan-row">
+                        <td class="scan-target">
+                            <span class="target-url">{{ scan.target[:50] }}{% if scan.target|length > 50 %}...{% endif %}</span>
+                        </td>
+                        <td><span class="status-pill status-{{ scan.status }}">{{ scan.status }}</span></td>
+                        <td><span class="severity-count critical">{{ scan.summary.get('critical', 0) }}</span></td>
+                        <td><span class="severity-count high">{{ scan.summary.get('high', 0) }}</span></td>
+                        <td><span class="severity-count medium">{{ scan.summary.get('medium', 0) }}</span></td>
+                        <td>
+                            {% set score = scan.summary.get('security_score', '-') %}
+                            <span class="score-pill {% if score != '-' %}{% if score >= 80 %}score-good{% elif score >= 50 %}score-medium{% else %}score-bad{% endif %}{% endif %}">
+                                {{ score }}{% if score != '-' %}/100{% endif %}
+                            </span>
+                        </td>
+                        <td class="scan-date">{{ scan.started_at|int|strftime }}</td>
+                        <td class="scan-actions">
+                            <a href="/results/{{ scan.id }}" class="btn btn-secondary btn-sm">View</a>
+                            <a href="/report/{{ scan.id }}/html" class="btn btn-secondary btn-sm">Report</a>
+                            <form method="POST" action="/scan/{{ scan.id }}/delete" style="display:inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this scan?')">Del</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% endif %}
 </div>

@@ -1,42 +1,71 @@
 {% extends "base.html" %}
-{% block title %}VenomStrike — Security Scanner{% endblock %}
+{% block title %}VenomStrike — Advanced Security Scanner{% endblock %}
 {% block content %}
 <div class="hero">
-    <pre class="ascii-art">
- ██╗   ██╗███████╗███╗   ██╗ ██████╗ ███╗   ███╗███████╗████████╗██████╗ ██╗██╗  ██╗███████╗
- ██║   ██║██╔════╝████╗  ██║██╔═══██╗████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██║██║ ██╔╝██╔════╝
- ██║   ██║█████╗  ██╔██╗ ██║██║   ██║██╔████╔██║███████╗   ██║   ██████╔╝██║█████╔╝ █████╗  
- ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║╚════██║   ██║   ██╔══██╗██║██╔═██╗ ██╔══╝  
-  ╚████╔╝ ███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║███████║   ██║   ██║  ██║██║██║  ██╗███████╗
-   ╚═══╝  ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝
-    </pre>
-    <p class="hero-subtitle">Advanced Security Testing & Vulnerability Debugging Framework</p>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <span class="hero-icon">⚡</span>
+            Venom<span class="text-accent">Strike</span>
+        </h1>
+        <p class="hero-subtitle">Advanced Security Testing & Vulnerability Analysis Framework</p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="hero-stat-value">35+</span>
+                <span class="hero-stat-label">Attack Modules</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">17</span>
+                <span class="hero-stat-label">WAF Evasions</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">7</span>
+                <span class="hero-stat-label">Integrations</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">v5.0</span>
+                <span class="hero-stat-label">Apex Edition</span>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="scan-container">
-    <div class="card scan-card">
-        <h2 class="card-title">🎯 New Security Scan</h2>
+    <div class="card glass-card scan-card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="title-icon">🎯</span> New Security Scan</h2>
+            <span class="card-badge">Quantum Engine</span>
+        </div>
         
         <div class="auth-warning">
             <span class="warning-icon">⚠️</span>
-            <strong>Legal Requirement:</strong> You must have explicit written authorization to test any system you do not own.
-            Unauthorized testing is illegal under the Computer Fraud and Abuse Act and similar laws worldwide.
+            <div class="warning-content">
+                <strong>Legal Requirement:</strong> You must have explicit written authorization to test any system you do not own.
+                Unauthorized testing is illegal under the Computer Fraud and Abuse Act and similar laws worldwide.
+            </div>
         </div>
 
         <form id="scanForm" action="/scan" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             
             <div class="form-group">
-                <label for="target">🌐 Target URL</label>
-                <input type="url" id="target" name="target" placeholder="https://your-app.example.com" required
-                       class="form-control" autocomplete="off">
+                <label for="target" class="form-label">
+                    <span class="label-icon">🌐</span> Target URL
+                </label>
+                <div class="input-wrapper">
+                    <input type="url" id="target" name="target" placeholder="https://your-app.example.com" required
+                           class="form-control" autocomplete="off">
+                    <span class="input-focus-ring"></span>
+                </div>
                 <small class="form-hint">Enter the full URL of your authorized target</small>
             </div>
 
-            <div class="form-row">
-                <div class="form-group half">
-                    <label for="scan_mode">📡 Scan Mode</label>
-                    <select id="scan_mode" name="scan_mode" class="form-control">
+            <div class="form-grid form-grid-3">
+                <div class="form-group">
+                    <label for="scan_mode" class="form-label">
+                        <span class="label-icon">📡</span> Scan Mode
+                    </label>
+                    <select id="scan_mode" name="scan_mode" class="form-control form-select">
                         <option value="auto">🤖 Full Auto Scan</option>
                         <option value="injection">💉 Injection Attacks</option>
                         <option value="client_side">🌐 Client-Side Attacks</option>
@@ -46,75 +75,122 @@
                         <option value="advanced">🚀 Advanced</option>
                     </select>
                 </div>
-                <div class="form-group half">
-                    <label for="threads">🧵 Threads</label>
+                <div class="form-group">
+                    <label for="depth" class="form-label">
+                        <span class="label-icon">📊</span> Scan Depth
+                    </label>
+                    <select id="depth" name="depth" class="form-control form-select">
+                        <option value="quick">⚡ Quick</option>
+                        <option value="standard" selected>📋 Standard</option>
+                        <option value="deep">🔍 Deep</option>
+                        <option value="full">🎯 Full</option>
+                        <option value="quantum">🔬 Quantum</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="threads" class="form-label">
+                        <span class="label-icon">��</span> Threads
+                    </label>
                     <input type="number" id="threads" name="threads" value="10" min="1" max="50" class="form-control">
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group half">
-                    <label for="cookie">🍪 Cookie</label>
+            <div class="form-grid form-grid-2">
+                <div class="form-group">
+                    <label for="cookie" class="form-label">
+                        <span class="label-icon">🍪</span> Cookie
+                    </label>
                     <input type="text" id="cookie" name="cookie" placeholder="session=abc123; token=xyz" class="form-control">
                 </div>
-                <div class="form-group half">
-                    <label for="proxy">🔀 Proxy</label>
+                <div class="form-group">
+                    <label for="proxy" class="form-label">
+                        <span class="label-icon">🔀</span> Proxy
+                    </label>
                     <input type="text" id="proxy" name="proxy" placeholder="http://127.0.0.1:8080" class="form-control">
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="checkbox-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="authorized" name="authorized" required>
-                    <span class="checkmark"></span>
-                    I confirm that I have <strong>explicit authorization</strong> to test this target and take full legal responsibility for this scan.
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                        I confirm that I have <strong>explicit authorization</strong> to test this target and take full legal responsibility for this scan.
+                    </span>
                 </label>
-            </div>
-
-            <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="learning_mode" name="learning_mode">
-                    <span class="checkmark"></span>
-                    🎓 Learning Mode (include detailed explanations and fix code)
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                        🎓 Learning Mode — include detailed explanations and fix code
+                    </span>
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-large" id="scanBtn">
-                <span class="btn-icon">⚡</span> Start Security Scan
+            <button type="submit" class="btn btn-primary btn-large btn-glow" id="scanBtn">
+                <span class="btn-icon">⚡</span> Launch Security Scan
             </button>
         </form>
     </div>
 
-    <div class="card module-grid">
-        <h3>🗡️ Attack Modules (35+)</h3>
-        <div class="modules">
+    <div class="card glass-card modules-card">
+        <div class="card-header">
+            <h3 class="card-title"><span class="title-icon">🗡️</span> Attack Modules</h3>
+            <span class="card-badge">35+ Modules</span>
+        </div>
+        <div class="modules-grid">
             <div class="module-category">
-                <h4>💉 Injection</h4>
-                <span class="badge">SQLi</span><span class="badge">NoSQLi</span><span class="badge">CMDi</span>
-                <span class="badge">SSTI</span><span class="badge">XXE</span><span class="badge">LDAP</span>
-                <span class="badge">XPath</span>
+                <div class="module-category-header">
+                    <span class="module-icon">💉</span>
+                    <h4>Injection</h4>
+                </div>
+                <div class="module-badges">
+                    <span class="module-badge">SQLi</span><span class="module-badge">NoSQLi</span><span class="module-badge">CMDi</span>
+                    <span class="module-badge">SSTI</span><span class="module-badge">XXE</span><span class="module-badge">LDAP</span>
+                    <span class="module-badge">XPath</span>
+                </div>
             </div>
             <div class="module-category">
-                <h4>🌐 Client-Side</h4>
-                <span class="badge">XSS</span><span class="badge">CSRF</span><span class="badge">Clickjack</span>
-                <span class="badge">CORS</span><span class="badge">OpenRedirect</span><span class="badge">ProtoPollution</span>
+                <div class="module-category-header">
+                    <span class="module-icon">🌐</span>
+                    <h4>Client-Side</h4>
+                </div>
+                <div class="module-badges">
+                    <span class="module-badge">XSS</span><span class="module-badge">CSRF</span><span class="module-badge">Clickjack</span>
+                    <span class="module-badge">CORS</span><span class="module-badge">OpenRedirect</span><span class="module-badge">ProtoPollution</span>
+                </div>
             </div>
             <div class="module-category">
-                <h4>🖥️ Server-Side</h4>
-                <span class="badge">SSRF</span><span class="badge">LFI</span><span class="badge">RFI</span>
-                <span class="badge">FileUpload</span><span class="badge">RCE</span><span class="badge">HTTPSmuggling</span>
+                <div class="module-category-header">
+                    <span class="module-icon">🖥️</span>
+                    <h4>Server-Side</h4>
+                </div>
+                <div class="module-badges">
+                    <span class="module-badge">SSRF</span><span class="module-badge">LFI</span><span class="module-badge">RFI</span>
+                    <span class="module-badge">FileUpload</span><span class="module-badge">RCE</span><span class="module-badge">HTTPSmuggling</span>
+                </div>
             </div>
             <div class="module-category">
-                <h4>🔐 Auth</h4>
-                <span class="badge">AuthBypass</span><span class="badge">JWT</span><span class="badge">Session</span>
-                <span class="badge">OAuth</span><span class="badge">IDOR</span><span class="badge">AccTakeover</span>
+                <div class="module-category-header">
+                    <span class="module-icon">🔐</span>
+                    <h4>Authentication</h4>
+                </div>
+                <div class="module-badges">
+                    <span class="module-badge">AuthBypass</span><span class="module-badge">JWT</span><span class="module-badge">Session</span>
+                    <span class="module-badge">OAuth</span><span class="module-badge">IDOR</span><span class="module-badge">AccTakeover</span>
+                </div>
             </div>
             <div class="module-category">
-                <h4>⚙️ Logic & Advanced</h4>
-                <span class="badge">RaceCondition</span><span class="badge">BizLogic</span><span class="badge">MassAssign</span>
-                <span class="badge">RateLimit</span><span class="badge">GraphQL</span><span class="badge">WebSocket</span>
-                <span class="badge">CachePoison</span><span class="badge">CRLF</span><span class="badge">HostHeader</span>
-                <span class="badge">SubdomainTakeover</span>
+                <div class="module-category-header">
+                    <span class="module-icon">⚙️</span>
+                    <h4>Logic & Advanced</h4>
+                </div>
+                <div class="module-badges">
+                    <span class="module-badge">RaceCondition</span><span class="module-badge">BizLogic</span><span class="module-badge">MassAssign</span>
+                    <span class="module-badge">RateLimit</span><span class="module-badge">GraphQL</span><span class="module-badge">WebSocket</span>
+                    <span class="module-badge">CachePoison</span><span class="module-badge">CRLF</span><span class="module-badge">HostHeader</span>
+                    <span class="module-badge">SubdomainTakeover</span>
+                </div>
             </div>
         </div>
     </div>
@@ -127,11 +203,13 @@ document.getElementById('scanForm').addEventListener('submit', function(e) {
     const auth = document.getElementById('authorized');
     if (!auth.checked) {
         e.preventDefault();
-        alert('You must confirm authorization before scanning.');
+        VS.showToast('You must confirm authorization before scanning.', 'error');
         return;
     }
-    document.getElementById('scanBtn').innerHTML = '<span class="spinner">⏳</span> Scanning...';
-    document.getElementById('scanBtn').disabled = true;
+    const btn = document.getElementById('scanBtn');
+    btn.innerHTML = '<span class="spinner"></span> Scanning...';
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
 });
 </script>
 {% endblock %}

@@ -1,49 +1,91 @@
 {% extends "base.html" %}
-{% block title %}Learning Resources — VenomStrike{% endblock %}
+{% block title %}Security Academy — VenomStrike{% endblock %}
 {% block content %}
 <div class="learning-container">
-    <h1>🎓 Security Learning Resources</h1>
-    <p class="subtitle">Learn about web application vulnerabilities and how to defend against them.</p>
+    <div class="page-header">
+        <h1><span class="page-icon">🎓</span> Security Academy</h1>
+        <p class="page-subtitle">Learn about web application vulnerabilities and how to defend against them.</p>
+    </div>
     
-    <div class="vuln-cards">
+    <div class="vuln-grid">
         {% set vulns = [
-            ('SQL Injection', '💉', 'Critical', 'CWE-89', 'A03:2021'),
-            ('XSS', '🌐', 'High', 'CWE-79', 'A03:2021'),
-            ('SSRF', '🔄', 'Critical', 'CWE-918', 'A10:2021'),
-            ('CSRF', '🎭', 'Medium', 'CWE-352', 'A01:2021'),
-            ('LFI/Path Traversal', '📂', 'High', 'CWE-22', 'A01:2021'),
-            ('Command Injection', '💻', 'Critical', 'CWE-78', 'A03:2021'),
-            ('JWT Vulnerabilities', '🔑', 'Critical', 'CWE-347', 'A02:2021'),
-            ('IDOR', '👤', 'High', 'CWE-639', 'A01:2021'),
-            ('XXE', '📄', 'High', 'CWE-611', 'A05:2021'),
-            ('Clickjacking', '🖱️', 'Medium', 'CWE-1021', 'A05:2021'),
-            ('CORS Misconfiguration', '🌍', 'High', 'CWE-346', 'A05:2021'),
-            ('Open Redirect', '↗️', 'Medium', 'CWE-601', 'A01:2021'),
+            ('SQL Injection', '💉', 'Critical', 'CWE-89', 'A03:2021', 'Manipulate database queries to access or modify data'),
+            ('XSS', '🌐', 'High', 'CWE-79', 'A03:2021', 'Inject malicious scripts into web pages viewed by other users'),
+            ('SSRF', '🔄', 'Critical', 'CWE-918', 'A10:2021', 'Forge requests from the server to internal resources'),
+            ('CSRF', '🎭', 'Medium', 'CWE-352', 'A01:2021', 'Trick users into executing unwanted actions'),
+            ('LFI/Path Traversal', '📂', 'High', 'CWE-22', 'A01:2021', 'Read arbitrary files from the server filesystem'),
+            ('Command Injection', '💻', 'Critical', 'CWE-78', 'A03:2021', 'Execute arbitrary system commands on the server'),
+            ('JWT Vulnerabilities', '🔑', 'Critical', 'CWE-347', 'A02:2021', 'Bypass authentication via token manipulation'),
+            ('IDOR', '👤', 'High', 'CWE-639', 'A01:2021', 'Access other users data by manipulating object references'),
+            ('XXE', '📄', 'High', 'CWE-611', 'A05:2021', 'Exploit XML parsers to read files or perform SSRF'),
+            ('Clickjacking', '🖱️', 'Medium', 'CWE-1021', 'A05:2021', 'Trick users into clicking hidden UI elements'),
+            ('CORS Misconfiguration', '🌍', 'High', 'CWE-346', 'A05:2021', 'Exploit overly permissive cross-origin policies'),
+            ('Open Redirect', '↗️', 'Medium', 'CWE-601', 'A01:2021', 'Redirect users to malicious external sites'),
         ] %}
         
-        {% for vuln, icon, severity, cwe, owasp in vulns %}
-        <div class="vuln-card severity-{{ severity.lower() }}">
-            <div class="vuln-icon">{{ icon }}</div>
+        {% for vuln, icon, severity, cwe, owasp, desc in vulns %}
+        <div class="vuln-card glass-card severity-{{ severity.lower() }}">
+            <div class="vuln-card-header">
+                <span class="vuln-icon">{{ icon }}</span>
+                <span class="severity-dot severity-dot-{{ severity.lower() }}"></span>
+            </div>
             <h3>{{ vuln }}</h3>
+            <p class="vuln-desc">{{ desc }}</p>
             <div class="vuln-meta">
                 <span class="badge badge-{{ severity.lower() }}">{{ severity }}</span>
                 <span class="badge badge-cwe">{{ cwe }}</span>
                 <span class="badge badge-owasp">{{ owasp }}</span>
             </div>
-            <a href="/learning/{{ vuln|urlencode }}" class="btn btn-small">Learn More</a>
+            <a href="/learning/{{ vuln|urlencode }}" class="btn btn-secondary btn-sm btn-full">Learn More →</a>
         </div>
         {% endfor %}
     </div>
     
-    <div class="resources-section">
-        <h2>📚 External Resources</h2>
-        <div class="resource-links">
-            <a href="https://owasp.org/www-project-top-ten/" target="_blank" class="resource-link">OWASP Top 10</a>
-            <a href="https://portswigger.net/web-security" target="_blank" class="resource-link">PortSwigger Web Academy</a>
-            <a href="https://cwe.mitre.org/" target="_blank" class="resource-link">CWE Database</a>
-            <a href="https://cheatsheetseries.owasp.org/" target="_blank" class="resource-link">OWASP Cheat Sheets</a>
-            <a href="https://hackerone.com/hacktivity" target="_blank" class="resource-link">HackerOne Reports</a>
-            <a href="https://www.hackthebox.com" target="_blank" class="resource-link">HackTheBox</a>
+    <div class="card glass-card resources-card">
+        <h2><span class="section-icon">📚</span> External Resources</h2>
+        <div class="resource-grid">
+            <a href="https://owasp.org/www-project-top-ten/" target="_blank" class="resource-link glass-card">
+                <span class="resource-icon">🛡️</span>
+                <div class="resource-info">
+                    <strong>OWASP Top 10</strong>
+                    <small>Industry standard awareness document</small>
+                </div>
+            </a>
+            <a href="https://portswigger.net/web-security" target="_blank" class="resource-link glass-card">
+                <span class="resource-icon">🎯</span>
+                <div class="resource-info">
+                    <strong>PortSwigger Academy</strong>
+                    <small>Free hands-on web security training</small>
+                </div>
+            </a>
+            <a href="https://cwe.mitre.org/" target="_blank" class="resource-link glass-card">
+                <span class="resource-icon">📋</span>
+                <div class="resource-info">
+                    <strong>CWE Database</strong>
+                    <small>Common weakness enumeration</small>
+                </div>
+            </a>
+            <a href="https://cheatsheetseries.owasp.org/" target="_blank" class="resource-link glass-card">
+                <span class="resource-icon">📝</span>
+                <div class="resource-info">
+                    <strong>OWASP Cheat Sheets</strong>
+                    <small>Concise security best practices</small>
+                </div>
+            </a>
+            <a href="https://hackerone.com/hacktivity" target="_blank" class="resource-link glass-card">
+                <span class="resource-icon">🐛</span>
+                <div class="resource-info">
+                    <strong>HackerOne Reports</strong>
+                    <small>Real-world bug bounty reports</small>
+                </div>
+            </a>
+            <a href="https://www.hackthebox.com" target="_blank" class="resource-link glass-card">
+                <span class="resource-icon">🏴</span>
+                <div class="resource-info">
+                    <strong>HackTheBox</strong>
+                    <small>Penetration testing labs</small>
+                </div>
+            </a>
         </div>
     </div>
 </div>

