@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Terminal — VenomStrike{% endblock %}
+{% block content %}
+<div class="terminal-container">
+    <div class="terminal-header">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">VenomStrike Terminal</span>
+    </div>
+    <div class="terminal-output" id="terminal">
+        <div class="terminal-line">[VenomStrike] Security scan terminal initialized</div>
+        <div class="terminal-line">[*] Scan ID: {{ scan_id }}</div>
+        <div class="terminal-line">[*] Target: {{ target }}</div>
+        <div class="terminal-line">[*] Status: Running...</div>
+        <div class="terminal-line separator">─────────────────────────────────────────</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const scanId = '{{ scan_id }}';
+const terminal = document.getElementById('terminal');
+
+function addLine(text, className) {
+    const div = document.createElement('div');
+    div.className = 'terminal-line ' + (className || '');
+    div.textContent = text;
+    terminal.appendChild(div);
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+const ws = new WebSocket('ws://' + location.host + '/ws');
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    if (data.type === 'finding') {
+        addLine('[FINDING] [' + data.severity + '] ' + data.vuln_type + ' @ ' + data.url, 'finding-' + data.severity.toLowerCase());
+    } else if (data.type === 'status') {
+        addLine('[*] ' + data.message, 'status');
+    } else if (data.type === 'complete') {
+        addLine('[+] Scan complete! Found ' + data.summary.total_findings + ' vulnerabilities.', 'success');
+        addLine('[*] Score: ' + data.summary.security_score + '/100', 'success');
+        setTimeout(() => { window.location.href = '/results/' + scanId; }, 2000);
+    }
+};
+</script>
+{% endblock %}

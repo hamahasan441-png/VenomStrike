@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Scan Results — VenomStrike{% endblock %}
+{% block content %}
+<div class="results-container">
+    <div class="results-header">
+        <h1>🗡️ Scan Results</h1>
+        <div class="scan-meta">
+            <span class="meta-item">📍 Target: <strong>{{ scan.target }}</strong></span>
+            <span class="meta-item">🆔 Scan ID: <code>{{ scan.scan_id }}</code></span>
+            <span class="meta-item">📊 Status: <span class="status-{{ scan.status }}">{{ scan.status }}</span></span>
+        </div>
+    </div>
+
+    {% if summary %}
+    <div class="summary-grid">
+        <div class="summary-card score-card">
+            <div class="score-circle {% if summary.security_score >= 80 %}score-good{% elif summary.security_score >= 50 %}score-medium{% else %}score-bad{% endif %}">
+                {{ summary.security_score }}
+            </div>
+            <div class="score-label">Security Score</div>
+        </div>
+        <div class="summary-card">
+            <div class="stat critical">{{ summary.get('critical', 0) }}</div>
+            <div class="stat-label">Critical</div>
+        </div>
+        <div class="summary-card">
+            <div class="stat high">{{ summary.get('high', 0) }}</div>
+            <div class="stat-label">High</div>
+        </div>
+        <div class="summary-card">
+            <div class="stat medium">{{ summary.get('medium', 0) }}</div>
+            <div class="stat-label">Medium</div>
+        </div>
+        <div class="summary-card">
+            <div class="stat low">{{ summary.get('low', 0) }}</div>
+            <div class="stat-label">Low</div>
+        </div>
+        <div class="summary-card">
+            <div class="stat total">{{ summary.get('total_findings', 0) }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+    </div>
+
+    <div class="export-buttons">
+        <a href="/report/{{ scan.scan_id }}/html" class="btn btn-secondary">📄 HTML Report</a>
+        <a href="/report/{{ scan.scan_id }}/json" class="btn btn-secondary">📋 JSON Report</a>
+    </div>
+    {% endif %}
+
+    {% if scan.status == 'running' %}
+    <div class="scan-progress">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p class="progress-text" id="progressText">Scan in progress...</p>
+        <div class="terminal-output" id="terminalOutput"></div>
+    </div>
+    {% endif %}
+
+    <div class="findings-section">
+        <h2>🔍 Findings ({{ findings|length }})</h2>
+        
+        {% if not findings %}
+        <div class="no-findings">
+            <span class="no-findings-icon">✅</span>
+            <p>No vulnerabilities found yet.{% if scan.status == 'running' %} Scan is still running...{% endif %}</p>
+        </div>
+        {% endif %}
+
+        {% for finding in findings %}
+        <div class="finding-card severity-{{ finding.severity.lower() }}">
+            <div class="finding-header" onclick="toggleFinding({{ loop.index }})">
+                <span class="severity-badge badge-{{ finding.severity.lower() }}">{{ finding.severity }}</span>
+                <h3 class="finding-title">{{ finding.vuln_type }}</h3>
+                <span class="confidence-badge">{{ finding.confidence }}% confidence</span>
+                <span class="toggle-icon" id="toggle-{{ loop.index }}">▼</span>
+            </div>
+            <div class="finding-body" id="body-{{ loop.index }}">
+                <div class="finding-details">
+                    <div class="detail-row"><span class="detail-label">URL</span><code class="detail-value">{{ finding.url }}</code></div>
+                    <div class="detail-row"><span class="detail-label">Parameter</span><code class="detail-value">{{ finding.param }}</code></div>
+                    <div class="detail-row"><span class="detail-label">Payload</span><code class="detail-value payload-code">{{ finding.payload }}</code></div>
+                    <div class="detail-row"><span class="detail-label">CWE</span><span class="detail-value">{{ finding.cwe }}</span></div>
+                    <div class="detail-row"><span class="detail-label">CVSS</span><span class="detail-value cvss-score">{{ finding.cvss }}</span></div>
+                    <div class="detail-row"><span class="detail-label">OWASP</span><span class="detail-value">{{ finding.owasp }}</span></div>
+                </div>
+                
+                {% if finding.debug_info %}
+                <div class="debug-section">
+                    <h4>🔬 Analysis</h4>
+                    {% if finding.debug_info.attack_explanation %}
+                    <div class="explanation">
+                        <strong>What is it?</strong>
+                        <p>{{ finding.debug_info.attack_explanation.what }}</p>
+                        <strong>Impact:</strong>
+                        <p>{{ finding.debug_info.attack_explanation.impact }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if finding.debug_info.fix_code %}
+                    <div class="fix-code">
+                        <h4>🔧 Remediation</h4>
+                        <p class="fix-summary">{{ finding.debug_info.fix_code.summary }}</p>
+                        {% if finding.debug_info.fix_code.python %}
+                        <pre class="code-block python-code">{{ finding.debug_info.fix_code.python }}</pre>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleFinding(id) {
+    const body = document.getElementById('body-' + id);
+    const toggle = document.getElementById('toggle-' + id);
+    if (body.style.display === 'none' || !body.style.display) {
+        body.style.display = 'block';
+        toggle.textContent = '▲';
+    } else {
+        body.style.display = 'none';
+        toggle.textContent = '▼';
+    }
+}
+
+{% if scan.status == 'running' %}
+// Poll for updates
+const scanId = '{{ scan.scan_id }}';
+let progress = 0;
+const interval = setInterval(function() {
+    fetch('/api/scan/' + scanId + '/status')
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'completed' || data.status === 'failed') {
+                clearInterval(interval);
+                window.location.reload();
+            }
+            if (data.progress) {
+                document.getElementById('progressBar').style.width = data.progress + '%';
+                document.getElementById('progressText').textContent = data.message || 'Scanning...';
+            }
+        })
+        .catch(() => {});
+}, 2000);
+{% endif %}
+</script>
+{% endblock %}
