@@ -2,6 +2,7 @@
 # For authorized security testing only.
 import time
 import statistics
+import logging
 from typing import Dict, Optional, Callable, List
 import requests
 from core.utils import make_request, response_diff
@@ -10,7 +11,9 @@ from core.evidence import (
     VERIFIED_CONFIRMED, VERIFIED_LIKELY, VERIFIED_SUSPICIOUS,
     VERIFIED_UNVERIFIED, VERIFIED_FALSE_POSITIVE,
 )
-from config import VALIDATION_ATTEMPTS, MIN_CONFIDENCE
+from config import VALIDATION_ATTEMPTS, MIN_CONFIDENCE, TIMING_TOLERANCE
+
+logger = logging.getLogger("venomstrike.validator")
 
 
 class ResultValidator:
@@ -55,6 +58,10 @@ class ResultValidator:
                     confirmations += 1
                 time.sleep(0.3)
             except Exception as e:
+                logger.debug(
+                    "Retest attempt %d failed for %s: %s",
+                    attempt + 1, finding.get("vuln_type", "unknown"), e,
+                )
                 retest_results.append({
                     "attempt": attempt + 1,
                     "confirmed": False,
@@ -97,34 +104,47 @@ class ResultValidator:
         return finding
 
     def calibrate_timing(self, url: str, method: str = "GET",
-                         samples: int = 3) -> float:
+                         samples: int = 5) -> float:
         """Measure baseline response time for timing-based detection.
+
+        Uses 5 samples (up from 3) and trims outliers for a more stable
+        baseline, reducing false positives on variable-latency networks.
 
         Returns the median response time in seconds.
         """
         if url in self._timing_baselines:
             return self._timing_baselines[url]
 
-        times = []
+        times: List[float] = []
         for _ in range(samples):
             start = time.time()
-            make_request(self.session, method, url)
+            make_request(self.session, method, url, retries=0)
             elapsed = time.time() - start
             times.append(elapsed)
             time.sleep(0.1)
 
-        median = statistics.median(times) if times else 1.0
+        if len(times) >= 5:
+            # Trim the highest and lowest to reduce jitter influence
+            times_sorted = sorted(times)
+            trimmed = times_sorted[1:-1]
+            median = statistics.median(trimmed)
+        else:
+            median = statistics.median(times) if times else 1.0
+
         self._timing_baselines[url] = median
         return median
 
     def is_timing_anomaly(self, url: str, elapsed: float,
                           sleep_seconds: float = 5.0,
-                          tolerance: float = 1.5) -> bool:
+                          tolerance: float = None) -> bool:
         """Check if a response time indicates a successful timing injection.
 
         The elapsed time must exceed: baseline_median + sleep_seconds - tolerance.
-        This accounts for network jitter without relying on hard thresholds.
+        ``tolerance`` defaults to the global ``TIMING_TOLERANCE`` setting so it
+        can be tuned per-network via the VS_TIMING_TOLERANCE env variable.
         """
+        if tolerance is None:
+            tolerance = TIMING_TOLERANCE
         baseline = self.calibrate_timing(url)
         threshold = baseline + sleep_seconds - tolerance
         return elapsed >= max(threshold, sleep_seconds * 0.7)

@@ -49,6 +49,16 @@ def init_db():
             FOREIGN KEY (scan_id) REFERENCES scans(id)
         )
     """)
+    # Performance indices for common queries
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_findings_scan_id ON findings(scan_id)"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_findings_severity ON findings(severity)"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_findings_confidence ON findings(confidence)"
+    )
     conn.commit()
     conn.close()
 

@@ -4,9 +4,13 @@ import urllib.parse
 import re
 import time
 import hashlib
+import random
+import logging
 import requests
 from typing import Optional, Dict, List, Any
-from config import DEFAULT_TIMEOUT, DEFAULT_USER_AGENT
+from config import DEFAULT_TIMEOUT, DEFAULT_USER_AGENT, RETRY_ATTEMPTS, RETRY_BACKOFF, VERIFY_SSL
+
+logger = logging.getLogger("venomstrike.utils")
 
 
 def make_request(
@@ -19,27 +23,55 @@ def make_request(
     headers=None,
     timeout=DEFAULT_TIMEOUT,
     allow_redirects=True,
+    retries: int = RETRY_ATTEMPTS,
+    backoff: float = RETRY_BACKOFF,
+    verify: bool = VERIFY_SSL,
 ) -> Optional[requests.Response]:
-    """Safe HTTP request wrapper with error handling."""
-    try:
-        resp = session.request(
-            method=method.upper(),
-            url=url,
-            params=params,
-            data=data,
-            json=json,
-            headers=headers or {},
-            timeout=timeout,
-            allow_redirects=allow_redirects,
-            verify=False,
-        )
-        return resp
-    except requests.exceptions.Timeout:
-        return None
-    except requests.exceptions.ConnectionError:
-        return None
-    except Exception:
-        return None
+    """Safe HTTP request wrapper with retry + exponential backoff.
+
+    Retries on transient errors (timeouts, connection resets) up to
+    ``retries`` times with exponential backoff and jitter so that
+    flaky networks don't cause false negatives.
+    """
+    last_exc: Optional[Exception] = None
+    for attempt in range(max(retries, 0) + 1):
+        try:
+            resp = session.request(
+                method=method.upper(),
+                url=url,
+                params=params,
+                data=data,
+                json=json,
+                headers=headers or {},
+                timeout=timeout,
+                allow_redirects=allow_redirects,
+                verify=verify,
+            )
+            return resp
+        except requests.exceptions.Timeout as exc:
+            last_exc = exc
+        except requests.exceptions.ConnectionError as exc:
+            last_exc = exc
+        except requests.exceptions.RequestException as exc:
+            last_exc = exc
+        except Exception as exc:
+            # Non-retryable (programming error, etc.)
+            logger.debug("Non-retryable request error: %s", exc)
+            return None
+
+        # Exponential backoff with jitter before next attempt
+        if attempt < retries:
+            wait = backoff * (2 ** attempt) + random.uniform(0, 0.5)
+            logger.debug(
+                "Request to %s failed (attempt %d/%d): %s — retrying in %.1fs",
+                url, attempt + 1, retries + 1, last_exc, wait,
+            )
+            time.sleep(wait)
+
+    logger.debug(
+        "Request to %s failed after %d attempts: %s", url, retries + 1, last_exc
+    )
+    return None
 
 
 def normalize_url(url: str) -> str:
