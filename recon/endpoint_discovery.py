@@ -2,7 +2,7 @@
 # For authorized security testing only.
 import os
 import urllib.parse
-from typing import List, Dict
+from typing import List, Dict, Optional
 import requests
 from core.utils import make_request, extract_forms, extract_links, load_payloads
 from core.logger import log_info, log_warning
@@ -12,16 +12,20 @@ API_WORDLIST_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "wo
 
 
 class EndpointDiscovery:
-    def __init__(self, target, session: requests.Session):
+    def __init__(self, target, session: requests.Session, depth_preset: Optional[Dict] = None):
         self.target = target
         self.session = session
         self.endpoints = []
         self.visited = set()
-        self.max_crawl = 50
+        preset = depth_preset or {}
+        self.max_crawl = preset.get("max_crawl_pages", 50)
+        self._crawl_depth = preset.get("crawl_depth", 2)
+        self._dir_brute_limit = preset.get("dir_brute_limit", 100)
+        self._api_brute_limit = preset.get("api_brute_limit", 50)
 
     def discover(self) -> List[Dict]:
         """Main discovery method combining crawl, directory brute-force, and form extraction."""
-        self._crawl(self.target.url, depth=2)
+        self._crawl(self.target.url, depth=self._crawl_depth)
         self._brute_directories()
         self._check_api_endpoints()
         
@@ -77,7 +81,8 @@ class EndpointDiscovery:
         fake_resp = make_request(self.session, "GET", f"{self.target.base_url}/thispathshouldnotexist12345")
         baseline_status = fake_resp.status_code if fake_resp else 404
         
-        for path in paths[:100]:
+        limit = self._dir_brute_limit if self._dir_brute_limit > 0 else len(paths)
+        for path in paths[:limit]:
             url = f"{self.target.base_url}/{path.lstrip('/')}"
             if url in self.visited:
                 continue
@@ -95,7 +100,8 @@ class EndpointDiscovery:
         if not paths:
             paths = ["/api/v1/users", "/api/users", "/graphql", "/api/health", "/swagger.json"]
         
-        for path in paths[:50]:
+        limit = self._api_brute_limit if self._api_brute_limit > 0 else len(paths)
+        for path in paths[:limit]:
             url = f"{self.target.base_url}{path}"
             if url in self.visited:
                 continue

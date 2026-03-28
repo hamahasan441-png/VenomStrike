@@ -1,4 +1,4 @@
-# 🗡️ VenomStrike v2.0
+# 🗡️ VenomStrike v3.0
 
 > **Advanced Security Testing & Vulnerability Debugging Framework — Educational Tool**
 
@@ -15,7 +15,23 @@
 - **False positive filtering** with 3x validation and confidence scoring
 - **Learning mode**: fix code, explanations, and OWASP mapping for every finding
 
-### Tool Integrations (v2.0)
+### Scan Depth Levels (v3.0)
+
+Control scanning thoroughness with the `--depth` flag:
+
+| Depth | Crawl | Dirs Brute | API Brute | Payloads | Validation | Use Case |
+|-------|-------|-----------|-----------|----------|------------|----------|
+| `quick` | 1 level, 20 pages | 50 paths | 25 endpoints | 5/type | 1x | Fast surface check |
+| `standard` | 2 levels, 50 pages | 100 paths | 50 endpoints | 15/type | 3x | Balanced (default) |
+| `deep` | 3 levels, 150 pages | 250 paths | 120 endpoints | 30/type | 5x | Thorough assessment |
+| `full` | 5 levels, 500 pages | All paths | All endpoints | All | 7x | Maximum coverage |
+
+### Expanded Payload & Wordlist Coverage (v3.0)
+- **950+ wordlist entries** across 6 categories (directories, API endpoints, subdomains, backup files, hidden params, user agents)
+- **800+ payload variations** across 11 vulnerability categories
+- Deeper SQLi, XSS, SSRF, SSTI, LFI, and command injection payloads
+
+### Tool Integrations
 | Tool | Purpose | Setup |
 |------|---------|-------|
 | **Nmap** | Port scanning & service detection | Install `nmap`, set `VS_NMAP_ENABLED=true` |
@@ -75,6 +91,12 @@ python venom.py -u https://target.com --mode injection --threads 20
 # Specific module with learning mode
 python venom.py -u https://target.com --mode sqli --learn
 
+# Deep scan — more payloads, deeper crawling
+python venom.py -u https://target.com --mode auto --depth deep
+
+# Full scan — maximum coverage, all payloads
+python venom.py -u https://target.com --mode auto --depth full --threads 50
+
 # With tool integrations
 python venom.py -u https://target.com --mode auto --nmap --nuclei
 
@@ -103,6 +125,7 @@ All settings can be configured via environment variables or `.env` file:
 VS_THREADS=10          # Concurrent threads
 VS_TIMEOUT=10          # Request timeout (seconds)
 VS_MIN_CONFIDENCE=70   # Minimum confidence to report (0-100)
+VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full
 
 # Integrations
 VS_NMAP_ENABLED=true

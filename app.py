@@ -80,6 +80,7 @@ def start_scan():
     proxy = request.form.get("proxy", "")
     authorized = request.form.get("authorized") == "on"
     learning_mode = request.form.get("learning_mode") == "on"
+    depth = request.form.get("depth", "standard")
 
     # Authorization check
     if not check_web_authorization(authorized, target):
@@ -103,6 +104,7 @@ def start_scan():
         session_manager=session_mgr,
         threads=min(threads, 50),
         learning_mode=learning_mode,
+        depth=depth,
     )
 
     # Run scan in background thread

