@@ -169,9 +169,31 @@ class ScanEngine:
                 except Exception as e:
                     log_error(f"Module error: {e}")
         
+        # Phase 3: Verification — deduplicate and verify findings
+        log_info("Phase 3: Verification & Deduplication")
+        self.findings = self._verify_and_deduplicate(self.findings)
+        
+        # Phase 4: CVE Enrichment
+        if self._integrations.get("cve"):
+            log_info("Phase 4: CVE Enrichment")
+            self.findings = self._enrich_findings_with_cves(self.findings)
+        
         score = calculate_security_score(self.findings)
+        
+        # Count by verification status
+        verified_count = sum(
+            1 for f in self.findings
+            if f.get("verification_status") in ("confirmed", "likely")
+        )
+        suspicious_count = sum(
+            1 for f in self.findings
+            if f.get("verification_status") == "suspicious"
+        )
+        
         summary = {
             "total_findings": len(self.findings),
+            "verified_findings": verified_count,
+            "suspicious_findings": suspicious_count,
             "critical": sum(1 for f in self.findings if f.get("severity") == "Critical"),
             "high": sum(1 for f in self.findings if f.get("severity") == "High"),
             "medium": sum(1 for f in self.findings if f.get("severity") == "Medium"),
@@ -181,15 +203,14 @@ class ScanEngine:
         
         update_scan_status(self.scan_id, "completed", summary)
         
-        # Enrich findings with CVE data if available
-        if self._integrations.get("cve"):
-            log_info("Phase 3: CVE Enrichment")
-            self.findings = self._enrich_findings_with_cves(self.findings)
-        
         if self.callback:
             self.callback("complete", {"summary": summary, "scan_id": self.scan_id})
         
-        log_success(f"Scan complete. Found {len(self.findings)} vulnerabilities. Score: {score}/100")
+        log_success(
+            f"Scan complete. {len(self.findings)} findings "
+            f"({verified_count} verified, {suspicious_count} suspicious). "
+            f"Score: {score}/100"
+        )
         return {
             "scan_id": self.scan_id,
             "findings": self.findings,
@@ -286,6 +307,56 @@ class ScanEngine:
             except Exception:
                 pass
         return findings
+
+    def _verify_and_deduplicate(self, findings: List[Dict]) -> List[Dict]:
+        """Deduplicate findings and tag verification status.
+
+        Dedup key: vuln_type + url + param (same as EvidencePackage fingerprint).
+        For duplicates, keep the finding with higher confidence.
+        Findings without verification_status get tagged as 'unverified'.
+        """
+        import hashlib
+        seen = {}
+        for finding in findings:
+            # Compute dedup key
+            fp = finding.get("fingerprint", "")
+            if not fp:
+                raw = (
+                    f"{finding.get('vuln_type', '')}|"
+                    f"{finding.get('url', '')}|"
+                    f"{finding.get('param', '')}"
+                )
+                fp = hashlib.sha256(raw.encode()).hexdigest()[:16]
+                finding["fingerprint"] = fp
+
+            # Ensure verification_status exists
+            if "verification_status" not in finding:
+                finding["verification_status"] = "unverified"
+                finding["verification_details"] = "Not yet validated"
+
+            # Ensure proof_description exists
+            if "proof_description" not in finding:
+                evidence = finding.get("evidence", {})
+                if isinstance(evidence, dict):
+                    finding["proof_description"] = evidence.get(
+                        "proof_description",
+                        evidence.get("verification_details", "No proof collected")
+                    )
+                else:
+                    finding["proof_description"] = "No proof collected"
+
+            # Keep highest confidence per fingerprint
+            if fp in seen:
+                if finding.get("confidence", 0) > seen[fp].get("confidence", 0):
+                    seen[fp] = finding
+            else:
+                seen[fp] = finding
+
+        deduped = list(seen.values())
+        removed = len(findings) - len(deduped)
+        if removed > 0:
+            log_info(f"Deduplication: removed {removed} duplicate findings")
+        return deduped
     
     def _run_module_safe(self, mod_name: str, mod_func, target: Target, 
                          endpoints: List[Dict], config: Dict):

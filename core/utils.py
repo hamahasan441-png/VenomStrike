@@ -90,6 +90,42 @@ def response_diff(resp1: requests.Response, resp2: requests.Response) -> float:
     return diff * 100
 
 
+def response_similarity(resp1: requests.Response, resp2: requests.Response) -> float:
+    """Calculate content similarity (0.0 to 1.0) between two responses.
+
+    Uses a combination of status code match, length ratio, and content overlap
+    for more reliable comparison than length-only diff.
+    """
+    if resp1 is None or resp2 is None:
+        return 0.0
+
+    score = 0.0
+
+    # Status code match (30% weight)
+    if resp1.status_code == resp2.status_code:
+        score += 0.3
+
+    # Length ratio (30% weight)
+    len1 = len(resp1.text)
+    len2 = len(resp2.text)
+    if max(len1, len2) > 0:
+        ratio = min(len1, len2) / max(len1, len2)
+        score += 0.3 * ratio
+    else:
+        score += 0.3
+
+    # Content overlap using set of words (40% weight)
+    words1 = set(resp1.text[:2000].split())
+    words2 = set(resp2.text[:2000].split())
+    if words1 or words2:
+        overlap = len(words1 & words2) / max(len(words1 | words2), 1)
+        score += 0.4 * overlap
+    else:
+        score += 0.4
+
+    return round(score, 3)
+
+
 def extract_forms(html: str, base_url: str) -> List[Dict]:
     """Extract all forms from HTML."""
     from bs4 import BeautifulSoup
