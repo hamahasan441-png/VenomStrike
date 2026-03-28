@@ -1,0 +1,8 @@
+# SSTI - Detection Probes (input:expected_output format)
+{{7*7}}
+${7*7}
+#{7*7}
+<%= 7*7 %>
+{{7*'7'}}
+@(7*7)
+*{7*7}

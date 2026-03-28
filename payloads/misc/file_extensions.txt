@@ -1,0 +1,24 @@
+# Malicious File Extensions
+.php
+.php5
+.php7
+.phtml
+.phar
+.phps
+.asp
+.aspx
+.aspx.
+.cer
+.asa
+.jsp
+.jspx
+.cfm
+.cfml
+.shtml
+.cgi
+.pl
+.py
+.rb
+.sh
+.bat
+.cmd

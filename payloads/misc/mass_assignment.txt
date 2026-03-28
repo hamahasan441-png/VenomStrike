@@ -1,0 +1,23 @@
+# Mass Assignment - Privileged Field Names
+admin
+is_admin
+role
+is_superuser
+is_staff
+verified
+active
+balance
+credit
+premium
+permissions
+access_level
+group
+privilege
+trust_level
+confirmed
+approved
+locked
+status
+subscription
+plan
+tier

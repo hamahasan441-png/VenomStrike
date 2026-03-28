@@ -1,0 +1,18 @@
+# SSRF - Internal Network Targets
+http://127.0.0.1/
+http://localhost/
+http://0.0.0.0/
+http://[::1]/
+http://10.0.0.1/
+http://172.16.0.1/
+http://192.168.1.1/
+http://127.0.0.1:8080/
+http://127.0.0.1:8443/
+http://127.0.0.1:9000/
+http://127.0.0.1:3000/
+http://127.0.0.1:5000/
+http://127.0.0.1:6379/
+http://127.0.0.1:27017/
+http://127.0.0.1:5432/
+http://127.0.0.1:3306/
+http://internal.example.com/
