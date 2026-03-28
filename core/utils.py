@@ -227,6 +227,32 @@ def sanitize_param(param: str) -> str:
     return re.sub(r"[^\w\-\.]", "", param)
 
 
+def build_injection_url(url: str, param: str, payload: str, method: str = "GET") -> str:
+    """Build the full injection URL with payload embedded in the parameter.
+
+    For GET requests, returns the URL with the payload injected in the query
+    string. For POST requests, returns the URL with a ``[POST: param=payload]``
+    suffix so the tester can reproduce the request.
+
+    Examples:
+        >>> build_injection_url("http://example.com/search?q=test", "q",
+        ...                     "' OR 1=1--", "GET")
+        "http://example.com/search?q=%27+OR+1%3D1--"
+
+        >>> build_injection_url("http://example.com/login", "user",
+        ...                     "admin'--", "POST")
+        "http://example.com/login  [POST: user=admin'--]"
+    """
+    if method.upper() == "GET":
+        parsed = urllib.parse.urlparse(url)
+        params = urllib.parse.parse_qs(parsed.query, keep_blank_values=True)
+        params[param] = [payload]
+        new_query = urllib.parse.urlencode(params, doseq=True)
+        return urllib.parse.urlunparse(parsed._replace(query=new_query))
+    else:
+        return f"{url}  [POST: {param}={payload}]"
+
+
 def build_finding(
     vuln_type: str,
     url: str,

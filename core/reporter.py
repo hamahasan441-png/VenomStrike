@@ -62,6 +62,15 @@ def _render_evidence(evidence) -> str:
 
     parts = []
 
+    # Injection URL (most important for reproduction)
+    inj_url = evidence.get("injection_url", "")
+    if inj_url:
+        parts.append(
+            f'<div class="injection-url-box">'
+            f'<b>&#128279; Injection URL (with payload):</b><br>'
+            f'<code class="injection-url">{_escape(inj_url)}</code></div>'
+        )
+
     # Proof description (most important)
     proof = evidence.get("proof_description", "")
     if proof:
@@ -164,6 +173,7 @@ def generate_html_report(scan_id: str, target: str, findings: List[Dict], summar
                     <tr><td><b>URL</b></td><td><code>{_escape(finding.get('url', ''))}</code></td></tr>
                     <tr><td><b>Parameter</b></td><td><code>{_escape(finding.get('param', ''))}</code></td></tr>
                     <tr><td><b>Payload</b></td><td><code>{_escape(finding.get('payload', ''))}</code></td></tr>
+                    <tr><td><b>Injection URL</b></td><td><code class="injection-url">{_escape(finding.get('injection_url', finding.get('evidence', {{}}).get('injection_url', 'N/A') if isinstance(finding.get('evidence'), dict) else 'N/A'))}</code></td></tr>
                     <tr><td><b>CWE</b></td><td>{_escape(finding.get('cwe', ''))}</td></tr>
                     <tr><td><b>CVSS</b></td><td>{finding.get('cvss', 0)}</td></tr>
                     <tr><td><b>OWASP</b></td><td>{_escape(finding.get('owasp', ''))}</td></tr>
@@ -209,6 +219,8 @@ pre {{ background: #0d0d0d; padding: 10px; border: 1px solid #333; border-radius
 .evidence-table td {{ padding: 3px 8px; }}
 .no-evidence {{ color: #666; font-style: italic; }}
 .verify-badge {{ display: inline-block; }}
+.injection-url-box {{ background: rgba(255,102,0,0.1); border-left: 3px solid #ff6600; padding: 10px; margin: 8px 0; }}
+.injection-url {{ color: #ff6600; font-size: 13px; word-break: break-all; background: #1a1a1a; padding: 4px 8px; display: inline-block; margin-top: 4px; }}
 .stats {{ display: flex; gap: 20px; margin-top: 10px; }}
 .stat-card {{ background: #1a1a1a; padding: 10px 15px; border-radius: 4px; text-align: center; }}
 .stat-num {{ font-size: 24px; font-weight: bold; }}
