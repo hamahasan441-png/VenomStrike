@@ -1,0 +1,25 @@
+# Default Credentials (username:password format)
+admin:admin
+admin:password
+admin:123456
+admin:admin123
+admin:root
+admin:toor
+root:root
+root:toor
+root:password
+root:123456
+administrator:administrator
+administrator:password
+test:test
+guest:guest
+admin:
+user:user
+admin:1234
+admin:admin1234
+admin:pass
+admin:qwerty
+sa:sa
+postgres:postgres
+mysql:mysql
+oracle:oracle

@@ -1,0 +1,12 @@
+# CORS - Test Origins
+https://evil.com
+https://attacker.com
+null
+https://evil.com.target.com
+http://localhost
+https://subdomain.evil.com
+https://target.com.evil.com
+https://notevil.com
+https://evil.target.com
+file://
+http://127.0.0.1

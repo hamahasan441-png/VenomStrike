@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}VenomStrike — Security Scanner{% endblock %}
+{% block content %}
+<div class="hero">
+    <pre class="ascii-art">
+ ██╗   ██╗███████╗███╗   ██╗ ██████╗ ███╗   ███╗███████╗████████╗██████╗ ██╗██╗  ██╗███████╗
+ ██║   ██║██╔════╝████╗  ██║██╔═══██╗████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██║██║ ██╔╝██╔════╝
+ ██║   ██║█████╗  ██╔██╗ ██║██║   ██║██╔████╔██║███████╗   ██║   ██████╔╝██║█████╔╝ █████╗  
+ ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║╚════██║   ██║   ██╔══██╗██║██╔═██╗ ██╔══╝  
+  ╚████╔╝ ███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║███████║   ██║   ██║  ██║██║██║  ██╗███████╗
+   ╚═══╝  ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝
+    </pre>
+    <p class="hero-subtitle">Advanced Security Testing & Vulnerability Debugging Framework</p>
+</div>
+
+<div class="scan-container">
+    <div class="card scan-card">
+        <h2 class="card-title">🎯 New Security Scan</h2>
+        
+        <div class="auth-warning">
+            <span class="warning-icon">⚠️</span>
+            <strong>Legal Requirement:</strong> You must have explicit written authorization to test any system you do not own.
+            Unauthorized testing is illegal under the Computer Fraud and Abuse Act and similar laws worldwide.
+        </div>
+
+        <form id="scanForm" action="/scan" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-group">
+                <label for="target">🌐 Target URL</label>
+                <input type="url" id="target" name="target" placeholder="https://your-app.example.com" required
+                       class="form-control" autocomplete="off">
+                <small class="form-hint">Enter the full URL of your authorized target</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half">
+                    <label for="scan_mode">📡 Scan Mode</label>
+                    <select id="scan_mode" name="scan_mode" class="form-control">
+                        <option value="auto">🤖 Full Auto Scan</option>
+                        <option value="injection">💉 Injection Attacks</option>
+                        <option value="client_side">🌐 Client-Side Attacks</option>
+                        <option value="server_side">🖥️ Server-Side Attacks</option>
+                        <option value="auth">🔐 Authentication</option>
+                        <option value="logic">⚙️ Business Logic</option>
+                        <option value="advanced">🚀 Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group half">
+                    <label for="threads">🧵 Threads</label>
+                    <input type="number" id="threads" name="threads" value="10" min="1" max="50" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half">
+                    <label for="cookie">🍪 Cookie</label>
+                    <input type="text" id="cookie" name="cookie" placeholder="session=abc123; token=xyz" class="form-control">
+                </div>
+                <div class="form-group half">
+                    <label for="proxy">🔀 Proxy</label>
+                    <input type="text" id="proxy" name="proxy" placeholder="http://127.0.0.1:8080" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="authorized" name="authorized" required>
+                    <span class="checkmark"></span>
+                    I confirm that I have <strong>explicit authorization</strong> to test this target and take full legal responsibility for this scan.
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="learning_mode" name="learning_mode">
+                    <span class="checkmark"></span>
+                    🎓 Learning Mode (include detailed explanations and fix code)
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large" id="scanBtn">
+                <span class="btn-icon">⚡</span> Start Security Scan
+            </button>
+        </form>
+    </div>
+
+    <div class="card module-grid">
+        <h3>🗡️ Attack Modules (35+)</h3>
+        <div class="modules">
+            <div class="module-category">
+                <h4>💉 Injection</h4>
+                <span class="badge">SQLi</span><span class="badge">NoSQLi</span><span class="badge">CMDi</span>
+                <span class="badge">SSTI</span><span class="badge">XXE</span><span class="badge">LDAP</span>
+                <span class="badge">XPath</span>
+            </div>
+            <div class="module-category">
+                <h4>🌐 Client-Side</h4>
+                <span class="badge">XSS</span><span class="badge">CSRF</span><span class="badge">Clickjack</span>
+                <span class="badge">CORS</span><span class="badge">OpenRedirect</span><span class="badge">ProtoPollution</span>
+            </div>
+            <div class="module-category">
+                <h4>🖥️ Server-Side</h4>
+                <span class="badge">SSRF</span><span class="badge">LFI</span><span class="badge">RFI</span>
+                <span class="badge">FileUpload</span><span class="badge">RCE</span><span class="badge">HTTPSmuggling</span>
+            </div>
+            <div class="module-category">
+                <h4>🔐 Auth</h4>
+                <span class="badge">AuthBypass</span><span class="badge">JWT</span><span class="badge">Session</span>
+                <span class="badge">OAuth</span><span class="badge">IDOR</span><span class="badge">AccTakeover</span>
+            </div>
+            <div class="module-category">
+                <h4>⚙️ Logic & Advanced</h4>
+                <span class="badge">RaceCondition</span><span class="badge">BizLogic</span><span class="badge">MassAssign</span>
+                <span class="badge">RateLimit</span><span class="badge">GraphQL</span><span class="badge">WebSocket</span>
+                <span class="badge">CachePoison</span><span class="badge">CRLF</span><span class="badge">HostHeader</span>
+                <span class="badge">SubdomainTakeover</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('scanForm').addEventListener('submit', function(e) {
+    const auth = document.getElementById('authorized');
+    if (!auth.checked) {
+        e.preventDefault();
+        alert('You must confirm authorization before scanning.');
+        return;
+    }
+    document.getElementById('scanBtn').innerHTML = '<span class="spinner">⏳</span> Scanning...';
+    document.getElementById('scanBtn').disabled = true;
+});
+</script>
+{% endblock %}

