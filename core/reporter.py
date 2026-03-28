@@ -160,6 +160,12 @@ def generate_html_report(scan_id: str, target: str, findings: List[Dict], summar
         proof_desc = finding.get("proof_description", "")
         evidence = finding.get("evidence", {})
 
+        # Resolve injection URL from finding or evidence
+        inj_url = finding.get("injection_url", "")
+        if not inj_url and isinstance(evidence, dict):
+            inj_url = evidence.get("injection_url", "")
+        inj_url = inj_url or "N/A"
+
         findings_html += f"""
         <div class="finding" id="finding-{i}">
             <div class="finding-header" style="border-left: 4px solid {color}">
@@ -173,7 +179,7 @@ def generate_html_report(scan_id: str, target: str, findings: List[Dict], summar
                     <tr><td><b>URL</b></td><td><code>{_escape(finding.get('url', ''))}</code></td></tr>
                     <tr><td><b>Parameter</b></td><td><code>{_escape(finding.get('param', ''))}</code></td></tr>
                     <tr><td><b>Payload</b></td><td><code>{_escape(finding.get('payload', ''))}</code></td></tr>
-                    <tr><td><b>Injection URL</b></td><td><code class="injection-url">{_escape(finding.get('injection_url', finding.get('evidence', {{}}).get('injection_url', 'N/A') if isinstance(finding.get('evidence'), dict) else 'N/A'))}</code></td></tr>
+                    <tr><td><b>Injection URL</b></td><td><code class="injection-url">{_escape(inj_url)}</code></td></tr>
                     <tr><td><b>CWE</b></td><td>{_escape(finding.get('cwe', ''))}</td></tr>
                     <tr><td><b>CVSS</b></td><td>{finding.get('cvss', 0)}</td></tr>
                     <tr><td><b>OWASP</b></td><td>{_escape(finding.get('owasp', ''))}</td></tr>
