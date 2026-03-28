@@ -112,7 +112,7 @@ class PayloadTransformer:
             r"\b(SELECT|UNION|FROM|WHERE|AND|OR|INSERT|UPDATE|DELETE|SLEEP)\b",
             re.IGNORECASE,
         )
-        return sql_kw.sub(lambda m: f"/**/{ m.group()}/**/", payload)
+        return sql_kw.sub(lambda m: f"/**/{m.group()}/**/", payload)
 
     def _apply_url_encode(self, payload: str) -> str:
         """URL-encode special characters."""
