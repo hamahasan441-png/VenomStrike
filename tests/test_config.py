@@ -47,9 +47,9 @@ def test_scan_depth_default():
 
 
 def test_depth_presets_keys():
-    """All four depth levels should have presets."""
+    """All five depth levels should have presets."""
     import config
-    for level in ("quick", "standard", "deep", "full"):
+    for level in ("quick", "standard", "deep", "full", "quantum"):
         assert level in config.DEPTH_PRESETS
         preset = config.DEPTH_PRESETS[level]
         assert "crawl_depth" in preset
@@ -64,7 +64,7 @@ def test_depth_presets_keys():
 def test_depth_presets_ordering():
     """Deeper levels should have higher crawl depth and more pages."""
     import config
-    levels = ["quick", "standard", "deep", "full"]
+    levels = ["quick", "standard", "deep", "full", "quantum"]
     for i in range(len(levels) - 1):
         a = config.DEPTH_PRESETS[levels[i]]
         b = config.DEPTH_PRESETS[levels[i + 1]]
