@@ -58,8 +58,9 @@ def test_nuclei_parse_empty():
 
 
 def test_nmap_parse_empty():
-    """NmapScanner should handle no hosts."""
+    """NmapScanner._parse_results should return empty hosts for unknown target."""
     from integrations.nmap_scanner import NmapScanner
     scanner = NmapScanner()
-    result = scanner._parse_results("nonexistent")
+    # Pass an invalid target name — scanner has no results to parse
+    result = scanner._parse_results("invalid-target-host")
     assert result["hosts"] == []

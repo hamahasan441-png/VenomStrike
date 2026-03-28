@@ -141,17 +141,17 @@ def main():
     }
     
     # Enable integrations based on CLI flags
-    import os as _os
+    import os
     if args.nmap:
-        _os.environ["VS_NMAP_ENABLED"] = "true"
+        os.environ["VS_NMAP_ENABLED"] = "true"
     if args.nuclei:
-        _os.environ["VS_NUCLEI_ENABLED"] = "true"
+        os.environ["VS_NUCLEI_ENABLED"] = "true"
     if args.zap:
-        _os.environ["VS_ZAP_ENABLED"] = "true"
-    if args.shodan and _os.environ.get("SHODAN_API_KEY"):
-        pass  # Already enabled via env
-    if args.cve_enrich and _os.environ.get("NVD_API_KEY"):
-        pass  # Already enabled via env
+        os.environ["VS_ZAP_ENABLED"] = "true"
+    if args.shodan and not os.environ.get("SHODAN_API_KEY"):
+        log_warning("--shodan requires SHODAN_API_KEY env variable to be set")
+    if args.cve_enrich and not os.environ.get("NVD_API_KEY"):
+        log_warning("--cve-enrich requires NVD_API_KEY env variable to be set")
 
     # Reload config after setting env vars
     import importlib

@@ -22,6 +22,7 @@ MAX_CONCURRENT_REQUESTS = int(os.environ.get("VS_MAX_CONCURRENT", 50))
 # Confidence thresholds
 MIN_CONFIDENCE = int(os.environ.get("VS_MIN_CONFIDENCE", 70))
 VALIDATION_ATTEMPTS = 3
+CVE_ENRICH_LIMIT = int(os.environ.get("VS_CVE_ENRICH_LIMIT", 20))
 
 # Database
 DB_PATH = os.environ.get("VS_DB_PATH", os.path.join(os.path.dirname(__file__), "venomstrike.db"))

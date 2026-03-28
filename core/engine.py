@@ -10,7 +10,7 @@ from core.target import Target
 from core.database import create_scan, save_finding, update_scan_status, init_db
 from core.reporter import generate_html_report, generate_json_report, calculate_security_score
 from config import (
-    DEFAULT_THREADS, MIN_CONFIDENCE,
+    DEFAULT_THREADS, MIN_CONFIDENCE, CVE_ENRICH_LIMIT,
     NMAP_ENABLED, NMAP_PATH,
     SHODAN_API_KEY,
     ZAP_ENABLED, ZAP_API_KEY, ZAP_PROXY,
@@ -280,7 +280,7 @@ class ScanEngine:
         if "cve" not in self._integrations:
             return findings
         cve_lookup = self._integrations["cve"]
-        for finding in findings[:20]:  # Limit to first 20 to avoid rate limits
+        for finding in findings[:CVE_ENRICH_LIMIT]:
             try:
                 cve_lookup.enrich_finding(finding)
             except Exception:
