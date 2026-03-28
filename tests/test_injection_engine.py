@@ -675,6 +675,8 @@ class TestAllTechniquesAttribute:
         expected_new = [
             "hex_encode", "unicode_encode", "null_byte_injection",
             "mysql_comment_bypass", "concat_obfuscation", "parameter_pollution",
+            "chunked_transfer", "json_smuggle", "multipart_boundary",
+            "tab_substitution", "scientific_notation", "overlong_utf8",
         ]
         for name in expected_new:
             assert name in PayloadTransformer.ALL_TECHNIQUES, f"{name} missing"
@@ -812,3 +814,107 @@ class TestBaseExploiterNewHelpers:
         )
         # Expected None due to connection error, but no exception raised
         assert result is None
+
+
+# ── v5.0 Apex — new PayloadTransformer techniques ────────────────────
+
+
+class TestPayloadTransformerChunkedTransfer:
+    def test_chunked_splits_payload(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_chunked_transfer("SELECT * FROM users")
+        assert "\r\n" in result
+        assert result.endswith("0\r\n\r\n")
+
+    def test_chunked_short_payload_unchanged(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_chunked_transfer("ab")
+        assert result == "ab"
+
+
+class TestPayloadTransformerJsonSmuggle:
+    def test_json_smuggle_wraps_payload(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_json_smuggle("<script>")
+        assert result.startswith('{"data":"')
+        assert "\\u003c" in result  # < encoded
+
+    def test_json_smuggle_is_valid_json(self):
+        import json
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_json_smuggle("test payload")
+        parsed = json.loads(result)
+        assert "data" in parsed
+
+
+class TestPayloadTransformerMultipartBoundary:
+    def test_multipart_contains_boundary(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_multipart_boundary("PAYLOAD")
+        assert "----VenomStrike" in result
+        assert "PAYLOAD" in result
+        assert "Content-Disposition" in result
+
+    def test_multipart_has_decoy_part(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_multipart_boundary("test")
+        assert "safe_value" in result
+
+
+class TestPayloadTransformerTabSubstitution:
+    def test_tab_replaces_spaces(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_tab_substitution("SELECT * FROM users")
+        assert "\t" in result
+        assert " " not in result
+
+    def test_tab_no_change_without_spaces(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_tab_substitution("nospaces")
+        assert result == "nospaces"
+
+
+class TestPayloadTransformerScientificNotation:
+    def test_scientific_replaces_numbers(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_scientific_notation("id=100")
+        assert "e" in result
+        assert "100" not in result
+
+    def test_scientific_handles_zero(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_scientific_notation("val=0")
+        assert "0e0" in result
+
+
+class TestPayloadTransformerOverlongUtf8:
+    def test_overlong_encodes_special_chars(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_overlong_utf8("<script>alert('xss')</script>")
+        assert "%c0%bc" in result  # < encoded
+        assert "%c0%be" in result  # > encoded
+        assert "%c0%a7" in result  # ' encoded
+
+    def test_overlong_preserves_alphanumeric(self):
+        from core.waf_evasion import PayloadTransformer
+        t = PayloadTransformer()
+        result = t._apply_overlong_utf8("abc123")
+        assert result == "abc123"
+
+
+class TestApexTechniqueCount:
+    """Verify v5.0 has all 17 WAF evasion techniques."""
+    def test_total_technique_count(self):
+        from core.waf_evasion import PayloadTransformer
+        assert len(PayloadTransformer.ALL_TECHNIQUES) == 17

@@ -43,7 +43,7 @@ def test_default_values():
 def test_scan_depth_default():
     """SCAN_DEPTH should default to 'standard'."""
     import config
-    assert config.SCAN_DEPTH in ("quick", "standard", "deep", "full")
+    assert config.SCAN_DEPTH in ("quick", "standard", "deep", "full", "quantum")
 
 
 def test_depth_presets_keys():
@@ -70,3 +70,18 @@ def test_depth_presets_ordering():
         b = config.DEPTH_PRESETS[levels[i + 1]]
         assert a["crawl_depth"] <= b["crawl_depth"]
         assert a["max_crawl_pages"] <= b["max_crawl_pages"]
+
+
+def test_version_is_5():
+    """Version should be 5.0.0 for Apex edition."""
+    import config
+    assert config.VERSION == "5.0.0"
+    assert config.CODENAME == "Apex"
+
+
+def test_apex_integration_config_keys():
+    """v5.0 should have Amass and Wappalyzer config keys."""
+    import config
+    assert hasattr(config, "AMASS_ENABLED")
+    assert hasattr(config, "AMASS_PATH")
+    assert hasattr(config, "WAPPALYZER_ENABLED")
