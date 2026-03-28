@@ -1,6 +1,6 @@
-# 🗡️ VenomStrike v4.0 — Quantum Edition
+# 🗡️ VenomStrike v7.0 — Titan Edition
 
-> **Advanced Security Testing & Vulnerability Debugging Framework — Quantum Edition — Educational Tool**
+> **Advanced Security Testing & Vulnerability Debugging Framework — Titan Edition — Educational Tool**
 
 ⚠️ **LEGAL DISCLAIMER**: VenomStrike is for **authorized security testing ONLY**. You must have explicit written permission to test any system. Unauthorized testing is illegal and unethical.
 
@@ -15,16 +15,20 @@
 - **False positive filtering** with multi-stage validation and confidence scoring
 - **Learning mode**: fix code, explanations, and OWASP mapping for every finding
 
-### Quantum Verification Engine (v4.0)
+### Titan Verification Engine (v7.0)
 
-VenomStrike v4.0 "Quantum" introduces an enhanced verification pipeline to ensure **all reported vulnerabilities are real and true**:
+VenomStrike v7.0 "Titan" introduces the most comprehensive verification pipeline ever, building on all previous editions to ensure **every reported vulnerability is real, verified, and actionable**:
 
 | Feature | Description |
 |---------|-------------|
+| **Out-of-Band (OOB) Verification** | DNS and HTTP callback-based confirmation for blind vulnerabilities (SQLi, XXE, SSRF, RCE). Unique tokens per test, dry-run mode when no callback infra. |
+| **Context-Aware Payload Mutation** | Technology-specific (MySQL, PostgreSQL, MSSQL, Oracle, SQLite), context-specific (attribute, script, tag, JSON, header), and WAF-specific payload generation. |
+| **WAF Fingerprinting** | Header-based identification of 10 WAF products (Cloudflare, AWS WAF, Akamai, Imperva, Sucuri, F5 BIG-IP, Barracuda, ModSecurity, FortiWeb, Citrix NetScaler). |
+| **Robust Timing Baselines** | Percentile-based (p95 + 2σ) timing thresholds with 7-sample collection and outlier trimming, eliminating network jitter false positives. |
 | **Triple-Marker Confirmation** | Three independent injection markers must ALL trigger the same behavioural change. Baseline must be clean. 25-point confidence boost. |
-| **Cross-Correlation Analysis** | Findings of the same vulnerability type across different parameters on the same endpoint provide corroborating evidence, boosting confidence. |
-| **Entropy-Based Anomaly Detection** | Measures Shannon entropy delta between baseline and payload responses to detect structural changes (error dumps, file contents) vs cosmetic noise. |
-| **Statistical Confidence Scoring** | Uses z-score analysis and p-value significance testing across multiple measurement samples for data-driven confidence instead of threshold guessing. |
+| **Cross-Correlation Analysis** | Findings of the same vulnerability type across different parameters provide corroborating evidence, boosting confidence. |
+| **Entropy-Based Anomaly Detection** | Measures Shannon entropy delta between baseline and payload responses to detect structural changes vs cosmetic noise. |
+| **Statistical Confidence Scoring** | Uses z-score analysis and p-value significance testing across multiple measurement samples for data-driven confidence. |
 | **Verification Chain** | Every finding includes an ordered audit trail of all verification steps performed, with method names, results, and timestamps. |
 
 ### Scan Depth Levels
@@ -37,7 +41,8 @@ Control scanning thoroughness with the `--depth` flag:
 | `standard` | 2 levels, 50 pages | 100 paths | 50 endpoints | 15/type | 3x | Balanced (default) |
 | `deep` | 3 levels, 150 pages | 250 paths | 120 endpoints | 30/type | 5x | Thorough assessment |
 | `full` | 5 levels, 500 pages | All paths | All endpoints | All | 7x | Maximum coverage |
-| `quantum` | 7 levels, 1000 pages | All paths | All endpoints | All | 10x | **Ultra-deep v4.0** — triple confirm, cross-correlation, entropy analysis |
+| `quantum` | 7 levels, 1000 pages | All paths | All endpoints | All | 10x | Ultra-deep v4.0 — triple confirm, cross-correlation, entropy analysis |
+| `titan` | 10 levels, 2000 pages | All paths | All endpoints | All | 15x | **Ultimate v7.0** — all quantum + OOB verification, payload mutation, WAF fingerprinting, robust timing |
 
 ### Expanded Payload & Wordlist Coverage
 - **950+ wordlist entries** across 6 categories (directories, API endpoints, subdomains, backup files, hidden params, user agents)
@@ -52,6 +57,8 @@ Control scanning thoroughness with the `--depth` flag:
 | **Nuclei** | Template-based vulnerability scanning | Install `nuclei`, set `VS_NUCLEI_ENABLED=true` |
 | **Shodan** | Passive host intelligence | Set `SHODAN_API_KEY` |
 | **NVD/CVE** | CVE enrichment for findings | Set `NVD_API_KEY` |
+| **Amass** | Subdomain enumeration | Install `amass`, set `VS_AMASS_ENABLED=true` |
+| **Wappalyzer** | Technology fingerprinting | Set `VS_WAPPALYZER_ENABLED=true` |
 
 ### Interfaces
 - **CLI** (`venom.py`) — Full-featured command line interface
@@ -113,6 +120,9 @@ python venom.py -u https://target.com --mode auto --depth full --threads 50
 # Quantum scan — ultra-deep v4.0 with triple confirmation & cross-correlation
 python venom.py -u https://target.com --mode auto --depth quantum --threads 50
 
+# Titan scan — ultimate v7.0 with OOB verification, payload mutation, WAF fingerprinting
+python venom.py -u https://target.com --mode auto --depth titan --threads 50
+
 # With tool integrations
 python venom.py -u https://target.com --mode auto --nmap --nuclei
 
@@ -141,7 +151,13 @@ All settings can be configured via environment variables or `.env` file:
 VS_THREADS=10          # Concurrent threads
 VS_TIMEOUT=10          # Request timeout (seconds)
 VS_MIN_CONFIDENCE=70   # Minimum confidence to report (0-100)
-VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full, quantum
+VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full, quantum, titan
+
+# Titan v7.0 settings
+VS_OOB_CALLBACK_DOMAIN=callback.example.com  # OOB callback domain
+VS_PAYLOAD_MUTATION=true                      # Context-aware payload mutation
+VS_ROBUST_TIMING=true                         # Percentile-based timing baselines
+VS_WAF_FINGERPRINT=true                       # WAF header fingerprinting
 
 # Integrations
 VS_NMAP_ENABLED=true
@@ -168,7 +184,10 @@ VenomStrike/
 │   ├── session.py        # HTTP session management
 │   ├── database.py       # SQLite persistence
 │   ├── reporter.py       # Report generation
-│   ├── validator.py      # Result validation
+│   ├── validator.py      # Result validation + robust timing (v7.0)
+│   ├── oob_verifier.py   # Out-of-Band verification (v7.0)
+│   ├── payload_mutator.py # Context-aware payload mutation (v7.0)
+│   ├── waf_evasion.py    # WAF detection + fingerprinting (v7.0)
 │   └── ...
 ├── exploits/             # 35+ vulnerability modules
 │   ├── injection/        # SQLi, NoSQL, Command, SSTI, XXE, LDAP, XPath
@@ -177,19 +196,21 @@ VenomStrike/
 │   ├── auth/             # Auth Bypass, JWT, Session, OAuth, IDOR
 │   ├── logic/            # Race Condition, Business Logic, Mass Assignment
 │   └── advanced/         # GraphQL, WebSocket, Cache Poison, CRLF
-├── integrations/         # External tool wrappers (v2.0)
+├── integrations/         # External tool wrappers
 │   ├── nmap_scanner.py   # Nmap port scanning
 │   ├── nuclei_runner.py  # Nuclei template scanning
 │   ├── zap_scanner.py    # OWASP ZAP API
 │   ├── shodan_recon.py   # Shodan intelligence
-│   └── cve_lookup.py     # NVD/CVE enrichment
+│   ├── cve_lookup.py     # NVD/CVE enrichment
+│   ├── amass_enum.py     # Subdomain enumeration
+│   └── wappalyzer_fingerprint.py # Technology fingerprinting
 ├── recon/                # Reconnaissance modules
 ├── debugger/             # Learning & remediation
 ├── payloads/             # Payload wordlists
 ├── wordlists/            # Directory/API wordlists
 ├── templates/            # Flask HTML templates
 ├── static/               # CSS & JavaScript
-├── tests/                # Test suite
+├── tests/                # Test suite (311 tests)
 ├── Dockerfile            # Container build
 ├── docker-compose.yml    # Container orchestration
 └── pyproject.toml        # Python packaging
@@ -218,7 +239,7 @@ VenomStrike/
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run tests
+# Run tests (311 tests)
 pytest
 
 # Run linter
@@ -227,6 +248,20 @@ ruff check .
 # Type checking
 mypy core/ integrations/
 ```
+
+---
+
+## Version History
+
+| Version | Codename | Key Features |
+|---------|----------|-------------|
+| v7.0 | **Titan** | OOB verification, payload mutation, WAF fingerprinting, robust timing, input validation |
+| v6.0 | Viper | Injection URL, response stability, stricter SSRF |
+| v5.0 | Apex | Amass subdomain enum, Wappalyzer fingerprinting |
+| v4.0 | Quantum | Triple confirmation, entropy analysis, cross-correlation, statistical confidence |
+| v3.0 | — | Expanded payloads/wordlists, scan depth levels |
+| v2.0 | — | Tool integrations (Nmap, ZAP, Nuclei, Shodan, CVE) |
+| v1.0 | — | Initial release with 35+ modules |
 
 ---
 

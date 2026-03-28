@@ -12,11 +12,10 @@ Supported OOB channels:
 
 For authorized security testing only.
 """
-import hashlib
 import logging
 import time
 import uuid
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from config import OOB_CALLBACK_DOMAIN, OOB_CALLBACK_TIMEOUT
 
