@@ -107,10 +107,18 @@ class ResultValidator:
                          samples: int = 5) -> float:
         """Measure baseline response time for timing-based detection.
 
-        Uses 5 samples (up from 3) and trims outliers for a more stable
-        baseline, reducing false positives on variable-latency networks.
+        Takes ``samples`` measurements (default 5), trims the highest and
+        lowest values when there are at least 5, and returns the median of
+        the remaining set.  This reduces false positives on variable-latency
+        networks compared to the previous 3-sample approach.
 
-        Returns the median response time in seconds.
+        Args:
+            url: The target URL.
+            method: HTTP method (default GET).
+            samples: Number of timing samples to collect (default 5).
+
+        Returns:
+            The median response time in seconds.
         """
         if url in self._timing_baselines:
             return self._timing_baselines[url]

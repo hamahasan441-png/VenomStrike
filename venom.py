@@ -129,6 +129,8 @@ def main():
     if timeout != args.timeout:
         log_warning(f"Timeout clamped to {timeout}s (valid range: 1-120)")
     delay = max(0.0, min(60.0, args.delay))
+    if delay != args.delay:
+        log_warning(f"Delay clamped to {delay}s (valid range: 0-60)")
     
     # Authorization check
     if not args.no_auth_check:

@@ -1,6 +1,7 @@
 """Tests for robustness improvements — retry logic, config validation, engine features."""
 import os
 import sys
+import tempfile
 import time
 import importlib
 from unittest.mock import patch, MagicMock
@@ -164,35 +165,35 @@ class TestDatabaseIndices:
         from config import DB_PATH
         from core.database import init_db
 
-        # Use a temp database
-        test_db = "/tmp/test_venomstrike_idx.db"
-        with patch("core.database.DB_PATH", test_db):
-            with patch("config.DB_PATH", test_db):
-                # re-patch get_connection
-                original_get = __import__("core.database", fromlist=["get_connection"]).get_connection
+        # Use a cross-platform temp database
+        fd, test_db = tempfile.mkstemp(suffix=".db", prefix="test_venomstrike_idx_")
+        os.close(fd)
+        try:
+            with patch("core.database.DB_PATH", test_db):
+                with patch("config.DB_PATH", test_db):
+                    original_get = __import__("core.database", fromlist=["get_connection"]).get_connection
 
-                def patched_get():
-                    conn = sqlite3.connect(test_db)
-                    conn.row_factory = sqlite3.Row
-                    return conn
+                    def patched_get():
+                        conn = sqlite3.connect(test_db)
+                        conn.row_factory = sqlite3.Row
+                        return conn
 
-                with patch("core.database.get_connection", patched_get):
-                    init_db()
-                    conn = sqlite3.connect(test_db)
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='findings'"
-                    )
-                    index_names = {row[0] for row in cursor.fetchall()}
-                    conn.close()
+                    with patch("core.database.get_connection", patched_get):
+                        init_db()
+                        conn = sqlite3.connect(test_db)
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='findings'"
+                        )
+                        index_names = {row[0] for row in cursor.fetchall()}
+                        conn.close()
 
-        assert "idx_findings_scan_id" in index_names
-        assert "idx_findings_severity" in index_names
-        assert "idx_findings_confidence" in index_names
-
-        # Cleanup
-        if os.path.exists(test_db):
-            os.remove(test_db)
+            assert "idx_findings_scan_id" in index_names
+            assert "idx_findings_severity" in index_names
+            assert "idx_findings_confidence" in index_names
+        finally:
+            if os.path.exists(test_db):
+                os.remove(test_db)
 
 
 # ── Validator improvement tests ────────────────────────────────────

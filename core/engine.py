@@ -2,7 +2,6 @@
 # For authorized security testing only.
 import uuid
 import time
-import signal
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
 from typing import List, Dict, Optional
