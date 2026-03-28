@@ -80,6 +80,14 @@ Examples:
     # Authorization
     parser.add_argument("--no-auth-check", action="store_true", help="Skip authorization prompt (use with caution)")
     
+    # Tool integrations
+    parser.add_argument("--nmap", action="store_true", help="Enable Nmap port scanning integration")
+    parser.add_argument("--nuclei", action="store_true", help="Enable Nuclei vulnerability scanning")
+    parser.add_argument("--zap", action="store_true", help="Enable OWASP ZAP integration")
+    parser.add_argument("--shodan", action="store_true", help="Enable Shodan passive recon")
+    parser.add_argument("--cve-enrich", action="store_true", help="Enrich findings with CVE/NVD data")
+    parser.add_argument("--no-integrations", action="store_true", help="Disable all external tool integrations")
+    
     return parser.parse_args()
 
 
@@ -132,15 +140,39 @@ def main():
         "graphql", "websocket", "cache_poison", "crlf", "host_header", "subdomain_takeover",
     }
     
+    # Enable integrations based on CLI flags
+    import os
+    if args.nmap:
+        os.environ["VS_NMAP_ENABLED"] = "true"
+    if args.nuclei:
+        os.environ["VS_NUCLEI_ENABLED"] = "true"
+    if args.zap:
+        os.environ["VS_ZAP_ENABLED"] = "true"
+    if args.shodan and not os.environ.get("SHODAN_API_KEY"):
+        log_warning("--shodan requires SHODAN_API_KEY env variable to be set")
+    if args.cve_enrich and not os.environ.get("NVD_API_KEY"):
+        log_warning("--cve-enrich requires NVD_API_KEY env variable to be set")
+
+    # Reload config after setting env vars
+    import importlib
+    import config as _cfg
+    importlib.reload(_cfg)
+
     engine = ScanEngine(
         session_manager=session_mgr,
         threads=args.threads,
         learning_mode=args.learn,
+        enable_integrations=not args.no_integrations,
     )
     
     log_info(f"Target: {target_url}")
     log_info(f"Mode: {args.mode}")
     log_info(f"Threads: {args.threads}")
+    
+    # Show active integrations
+    active_integrations = engine.get_integrations()
+    if active_integrations:
+        log_info(f"Integrations: {', '.join(active_integrations.keys())}")
     
     # Run scan
     if args.mode == "auto":

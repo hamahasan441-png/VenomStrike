@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  venomstrike:
+    build: .
+    container_name: venomstrike
+    ports:
+      - "${FLASK_PORT:-5000}:5000"
+    environment:
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-}
+      - VS_NMAP_ENABLED=true
+      - VS_THREADS=${VS_THREADS:-10}
+      - VS_TIMEOUT=${VS_TIMEOUT:-10}
+      - SHODAN_API_KEY=${SHODAN_API_KEY:-}
+      - NVD_API_KEY=${NVD_API_KEY:-}
+      - ZAP_API_KEY=${ZAP_API_KEY:-}
+    volumes:
+      - venomstrike-data:/app/data
+      - venomstrike-reports:/app/reports
+    restart: unless-stopped
+    networks:
+      - venomstrike-net
+
+  # Optional: OWASP ZAP as a companion service
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: venomstrike-zap
+    command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.key=${ZAP_API_KEY:-venomstrike}
+    ports:
+      - "8080:8080"
+    networks:
+      - venomstrike-net
+    profiles:
+      - with-zap
+
+volumes:
+  venomstrike-data:
+  venomstrike-reports:
+
+networks:
+  venomstrike-net:
+    driver: bridge
