@@ -73,6 +73,13 @@ class EvidencePackage:
     # Deduplication
     fingerprint: str = ""
 
+    # Raw evidence — full request/response capture for audit
+    raw_headers: str = ""
+
+    # Exploitability & remediation
+    exploitability_description: str = ""
+    remediation_guidance: str = ""
+
     def to_dict(self) -> Dict:
         d = {
             "vuln_type": self.vuln_type,
@@ -87,6 +94,12 @@ class EvidencePackage:
             "retest_attempts": self.retest_attempts,
             "fingerprint": self.fingerprint,
         }
+        if self.raw_headers:
+            d["raw_headers"] = self.raw_headers
+        if self.exploitability_description:
+            d["exploitability_description"] = self.exploitability_description
+        if self.remediation_guidance:
+            d["remediation_guidance"] = self.remediation_guidance
         if self.baseline:
             d["baseline"] = self.baseline.to_dict()
         if self.payload_request:
@@ -198,6 +211,39 @@ def build_proof_description(vuln_type: str, proof_data: Dict) -> str:
         parts.append(
             f"The pattern was NOT present in the baseline response, "
             f"confirming the payload triggered the behavior."
+        )
+
+    if "injected_header" in proof_data:
+        parts.append(
+            f"CRLF injection confirmed: injected header "
+            f"'{proof_data.get('injected_header_name', '')}' appeared in the raw "
+            f"response headers, absent from the baseline."
+        )
+
+    if "xxe_content" in proof_data:
+        parts.append(
+            f"XXE confirmed: external entity content "
+            f"'{proof_data['xxe_content'][:80]}' was resolved and included in "
+            f"the response, proving XML entity processing."
+        )
+
+    if "redirect_injection" in proof_data:
+        parts.append(
+            f"Open redirect confirmed: the Location header points to "
+            f"injected domain '{proof_data.get('injected_domain', '')}'."
+        )
+
+    if "nosql_auth_bypass" in proof_data:
+        parts.append(
+            f"NoSQL injection confirmed: authentication was bypassed — "
+            f"baseline status {proof_data.get('baseline_status', '?')} changed to "
+            f"{proof_data.get('payload_status', '?')} with operator payload."
+        )
+
+    if "confirmation_markers" in proof_data:
+        parts.append(
+            f"Multi-stage confirmation: two independent markers both triggered "
+            f"the same behavioural change, ruling out coincidence."
         )
 
     if not parts:

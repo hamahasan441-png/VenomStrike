@@ -62,6 +62,11 @@ VALIDATION_ATTEMPTS = _int_env("VS_VALIDATION_ATTEMPTS", 3, lo=1, hi=10)
 TIMING_TOLERANCE = _float_env("VS_TIMING_TOLERANCE", 1.5, lo=0.1, hi=10.0)
 CVE_ENRICH_LIMIT = _int_env("VS_CVE_ENRICH_LIMIT", 20, lo=1, hi=200)
 
+# Injection engine — advanced settings
+WAF_EVASION_ENABLED = os.environ.get("VS_WAF_EVASION", "true").lower() == "true"
+EARLY_TERMINATION = os.environ.get("VS_EARLY_TERMINATION", "true").lower() == "true"
+CONFIRMATION_ENABLED = os.environ.get("VS_CONFIRMATION", "true").lower() == "true"
+
 # Database
 DB_PATH = os.environ.get("VS_DB_PATH", os.path.join(os.path.dirname(__file__), "venomstrike.db"))
 
