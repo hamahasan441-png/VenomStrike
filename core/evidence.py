@@ -9,6 +9,13 @@ not just a pattern match or heuristic guess.  The Evidence dataclass captures:
  - A human-readable proof_description explaining *why* this is a real vuln
  - A verification_status (unverified / confirmed / likely / suspicious / false_positive)
  - Optional re-test results
+
+Quantum Edition (v4.0) adds:
+ - verification_chain: ordered list of verification steps performed, each with
+   its own method name, result, and timestamp.
+ - entropy_analysis: response entropy deltas to detect structural changes.
+ - cross_correlation: whether correlated findings boost confidence.
+ - statistical_summary: z-score and p-value for measurement-based detections.
 """
 import time
 import hashlib
@@ -80,6 +87,12 @@ class EvidencePackage:
     exploitability_description: str = ""
     remediation_guidance: str = ""
 
+    # Quantum verification chain (v4.0)
+    verification_chain: List[Dict] = field(default_factory=list)
+    entropy_analysis: Dict[str, Any] = field(default_factory=dict)
+    cross_correlation: Dict[str, Any] = field(default_factory=dict)
+    statistical_summary: Dict[str, Any] = field(default_factory=dict)
+
     def to_dict(self) -> Dict:
         d = {
             "vuln_type": self.vuln_type,
@@ -106,6 +119,14 @@ class EvidencePackage:
             d["payload_request"] = self.payload_request.to_dict()
         if self.retest_results:
             d["retest_results"] = self.retest_results
+        if self.verification_chain:
+            d["verification_chain"] = self.verification_chain
+        if self.entropy_analysis:
+            d["entropy_analysis"] = self.entropy_analysis
+        if self.cross_correlation:
+            d["cross_correlation"] = self.cross_correlation
+        if self.statistical_summary:
+            d["statistical_summary"] = self.statistical_summary
         return d
 
     def compute_fingerprint(self) -> str:
@@ -244,6 +265,36 @@ def build_proof_description(vuln_type: str, proof_data: Dict) -> str:
         parts.append(
             f"Multi-stage confirmation: two independent markers both triggered "
             f"the same behavioural change, ruling out coincidence."
+        )
+
+    if "triple_confirmation" in proof_data:
+        parts.append(
+            f"Quantum triple-marker confirmation: three independent markers ALL "
+            f"triggered the same behavioural change at the same injection point. "
+            f"Baseline was clean. This is the highest assurance level."
+        )
+
+    if "entropy_delta" in proof_data:
+        parts.append(
+            f"Entropy analysis: response entropy shifted by "
+            f"{proof_data['entropy_delta']:.4f} bits "
+            f"(baseline: {proof_data.get('baseline_entropy', 0):.4f}, "
+            f"payload: {proof_data.get('payload_entropy', 0):.4f}), "
+            f"indicating a structural change in the response content."
+        )
+
+    if "cross_correlated" in proof_data and proof_data["cross_correlated"]:
+        parts.append(
+            f"Cross-correlation: {proof_data.get('cluster_size', 0)} findings of "
+            f"the same vulnerability type were detected across different parameters "
+            f"on the same endpoint, providing corroborating evidence."
+        )
+
+    if "z_score" in proof_data:
+        parts.append(
+            f"Statistical analysis: z-score={proof_data['z_score']:.2f} "
+            f"(p {'< 0.05 — statistically significant' if proof_data.get('p_significant') else '>= 0.05'}), "
+            f"based on {proof_data.get('sample_count', 0)} independent measurements."
         )
 
     if not parts:

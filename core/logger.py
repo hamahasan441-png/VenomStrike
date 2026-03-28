@@ -14,7 +14,7 @@ SKULL_BANNER = r"""
  ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║╚════██║   ██║   ██╔══██╗██║██╔═██╗ ██╔══╝  
   ╚████╔╝ ███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║███████║   ██║   ██║  ██║██║██║  ██╗███████╗
    ╚═══╝  ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝
-                    🗡️  Advanced Security Testing & Vulnerability Debugging Framework 🗡️
+                    ⚡ v4.0 QUANTUM EDITION ⚡ Advanced Security Testing & Vulnerability Debugging Framework
                          FOR AUTHORIZED TESTING OF YOUR OWN APPLICATIONS ONLY
 """
 
