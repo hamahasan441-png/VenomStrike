@@ -1,6 +1,6 @@
-# 🗡️ VenomStrike v7.0 — Titan Edition
+# 🗡️ VenomStrike v9.0 — Chimera Edition
 
-> **Advanced Security Testing & Vulnerability Debugging Framework — Titan Edition — Educational Tool**
+> **Advanced Security Testing & Vulnerability Debugging Framework — Chimera Edition — Educational Tool**
 
 ⚠️ **LEGAL DISCLAIMER**: VenomStrike is for **authorized security testing ONLY**. You must have explicit written permission to test any system. Unauthorized testing is illegal and unethical.
 
@@ -15,21 +15,28 @@
 - **False positive filtering** with multi-stage validation and confidence scoring
 - **Learning mode**: fix code, explanations, and OWASP mapping for every finding
 
-### Titan Verification Engine (v7.0)
+### Chimera Intelligence Engine (v9.0)
 
-VenomStrike v7.0 "Titan" introduces the most comprehensive verification pipeline ever, building on all previous editions to ensure **every reported vulnerability is real, verified, and actionable**:
+VenomStrike v9.0 "Chimera" is the apex edition, building on all previous versions to deliver the most comprehensive, intelligent, and accurate security testing framework:
 
 | Feature | Description |
 |---------|-------------|
-| **Out-of-Band (OOB) Verification** | DNS and HTTP callback-based confirmation for blind vulnerabilities (SQLi, XXE, SSRF, RCE). Unique tokens per test, dry-run mode when no callback infra. |
-| **Context-Aware Payload Mutation** | Technology-specific (MySQL, PostgreSQL, MSSQL, Oracle, SQLite), context-specific (attribute, script, tag, JSON, header), and WAF-specific payload generation. |
-| **WAF Fingerprinting** | Header-based identification of 10 WAF products (Cloudflare, AWS WAF, Akamai, Imperva, Sucuri, F5 BIG-IP, Barracuda, ModSecurity, FortiWeb, Citrix NetScaler). |
-| **Robust Timing Baselines** | Percentile-based (p95 + 2σ) timing thresholds with 7-sample collection and outlier trimming, eliminating network jitter false positives. |
-| **Triple-Marker Confirmation** | Three independent injection markers must ALL trigger the same behavioural change. Baseline must be clean. 25-point confidence boost. |
-| **Cross-Correlation Analysis** | Findings of the same vulnerability type across different parameters provide corroborating evidence, boosting confidence. |
-| **Entropy-Based Anomaly Detection** | Measures Shannon entropy delta between baseline and payload responses to detect structural changes vs cosmetic noise. |
-| **Statistical Confidence Scoring** | Uses z-score analysis and p-value significance testing across multiple measurement samples for data-driven confidence. |
-| **Verification Chain** | Every finding includes an ordered audit trail of all verification steps performed, with method names, results, and timestamps. |
+| **Adaptive Rate Limiting** | Automatically adjusts request speed based on target responsiveness, avoiding detection and rate-limit blocks. |
+| **Cross-Module Vulnerability Correlation** | Correlates findings across different modules to identify attack chains and compound vulnerabilities. |
+| **Dynamic Scan Optimization** | Intelligently prioritizes endpoints and payloads based on real-time scan results for maximum efficiency. |
+| **SARIF CI/CD Output** | Generates SARIF-format reports for seamless integration with GitHub Code Scanning and other CI/CD pipelines. |
+| **Parameter Tampering Detection** | Detects parameter manipulation vulnerabilities including type juggling, mass assignment, and hidden parameter abuse. |
+| **Smart Payload Selection** | ML-inspired payload ranking that prioritizes likely-to-succeed payloads based on target technology stack (v8.0). |
+| **Attack Chain Correlation** | Maps multi-step attack chains across vulnerability types for realistic exploit path analysis (v8.0). |
+| **Bayesian Confidence Scoring** | Bayesian statistical model for data-driven confidence scoring with prior/posterior updating (v8.0). |
+| **Response Intelligence** | Deep response analysis detecting WAF blocks, error patterns, and behavioral anomalies (v8.0). |
+| **Out-of-Band (OOB) Verification** | DNS and HTTP callback-based confirmation for blind vulnerabilities (v7.0). |
+| **Context-Aware Payload Mutation** | Technology-specific and WAF-specific payload generation (v7.0). |
+| **WAF Fingerprinting** | Header-based identification of 10 WAF products (v7.0). |
+| **Robust Timing Baselines** | Percentile-based timing thresholds eliminating network jitter false positives (v7.0). |
+| **Triple-Marker Confirmation** | Three independent markers must ALL trigger the same behavioural change (v4.0). |
+| **Cross-Correlation & Entropy Analysis** | Corroborating evidence across parameters with Shannon entropy anomaly detection (v4.0). |
+| **Verification Chain** | Every finding includes an ordered audit trail of all verification steps performed. |
 
 ### Scan Depth Levels
 
@@ -42,7 +49,9 @@ Control scanning thoroughness with the `--depth` flag:
 | `deep` | 3 levels, 150 pages | 250 paths | 120 endpoints | 30/type | 5x | Thorough assessment |
 | `full` | 5 levels, 500 pages | All paths | All endpoints | All | 7x | Maximum coverage |
 | `quantum` | 7 levels, 1000 pages | All paths | All endpoints | All | 10x | Ultra-deep v4.0 — triple confirm, cross-correlation, entropy analysis |
-| `titan` | 10 levels, 2000 pages | All paths | All endpoints | All | 15x | **Ultimate v7.0** — all quantum + OOB verification, payload mutation, WAF fingerprinting, robust timing |
+| `titan` | 10 levels, 2000 pages | All paths | All endpoints | All | 15x | Ultimate v7.0 — all quantum + OOB verification, payload mutation, WAF fingerprinting |
+| `hydra` | 15 levels, 5000 pages | All paths | All endpoints | All | 20x | Supreme v8.0 — all titan + smart payloads, attack chains, Bayesian scoring, response intelligence |
+| `chimera` | 20 levels, 10000 pages | All paths | All endpoints | All | 25x | **Apex v9.0** — all hydra + adaptive rate limiting, vulnerability correlation, scan optimization, SARIF output, parameter tampering |
 
 ### Expanded Payload & Wordlist Coverage
 - **950+ wordlist entries** across 6 categories (directories, API endpoints, subdomains, backup files, hidden params, user agents)
@@ -123,6 +132,12 @@ python venom.py -u https://target.com --mode auto --depth quantum --threads 50
 # Titan scan — ultimate v7.0 with OOB verification, payload mutation, WAF fingerprinting
 python venom.py -u https://target.com --mode auto --depth titan --threads 50
 
+# Hydra scan — supreme v8.0 with smart payloads, attack chains, Bayesian scoring
+python venom.py -u https://target.com --mode auto --depth hydra --threads 50
+
+# Chimera scan — apex v9.0 with adaptive rate limiting, vulnerability correlation, SARIF output
+python venom.py -u https://target.com --mode auto --depth chimera --threads 50
+
 # With tool integrations
 python venom.py -u https://target.com --mode auto --nmap --nuclei
 
@@ -151,7 +166,20 @@ All settings can be configured via environment variables or `.env` file:
 VS_THREADS=10          # Concurrent threads
 VS_TIMEOUT=10          # Request timeout (seconds)
 VS_MIN_CONFIDENCE=70   # Minimum confidence to report (0-100)
-VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full, quantum, titan
+VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full, quantum, titan, hydra, chimera
+
+# Chimera v9.0 settings
+VS_ADAPTIVE_RATE_LIMIT=true                   # Adaptive rate limiting
+VS_VULN_CORRELATION=true                      # Cross-module vulnerability correlation
+VS_SCAN_OPTIMIZATION=true                     # Dynamic scan optimization
+VS_SARIF_OUTPUT=false                         # SARIF CI/CD output
+VS_PARAM_TAMPERING=true                       # Parameter tampering detection
+
+# Hydra v8.0 settings
+VS_SMART_PAYLOAD=true                         # Smart payload selection
+VS_ATTACK_CHAIN=true                          # Attack chain correlation
+VS_BAYESIAN_SCORING=true                      # Bayesian confidence scoring
+VS_RESPONSE_INTELLIGENCE=true                 # Response intelligence
 
 # Titan v7.0 settings
 VS_OOB_CALLBACK_DOMAIN=callback.example.com  # OOB callback domain
@@ -184,10 +212,18 @@ VenomStrike/
 │   ├── session.py        # HTTP session management
 │   ├── database.py       # SQLite persistence
 │   ├── reporter.py       # Report generation
-│   ├── validator.py      # Result validation + robust timing (v7.0)
-│   ├── oob_verifier.py   # Out-of-Band verification (v7.0)
-│   ├── payload_mutator.py # Context-aware payload mutation (v7.0)
-│   ├── waf_evasion.py    # WAF detection + fingerprinting (v7.0)
+│   ├── validator.py      # Result validation + robust timing
+│   ├── oob_verifier.py   # Out-of-Band verification
+│   ├── payload_mutator.py # Context-aware payload mutation
+│   ├── waf_evasion.py    # WAF detection + fingerprinting
+│   ├── rate_limiter.py   # Adaptive rate limiting (v9.0)
+│   ├── vulnerability_correlator.py # Cross-module correlation (v9.0)
+│   ├── scan_optimizer.py # Dynamic scan optimization (v9.0)
+│   ├── sarif_reporter.py # SARIF CI/CD output (v9.0)
+│   ├── smart_selector.py # Smart payload selection (v8.0)
+│   ├── attack_chain.py   # Attack chain correlation (v8.0)
+│   ├── bayesian_scorer.py # Bayesian confidence scoring (v8.0)
+│   ├── response_intelligence.py # Response intelligence (v8.0)
 │   └── ...
 ├── exploits/             # 35+ vulnerability modules
 │   ├── injection/        # SQLi, NoSQL, Command, SSTI, XXE, LDAP, XPath
@@ -210,7 +246,7 @@ VenomStrike/
 ├── wordlists/            # Directory/API wordlists
 ├── templates/            # Flask HTML templates
 ├── static/               # CSS & JavaScript
-├── tests/                # Test suite (311 tests)
+├── tests/                # Test suite (501 tests)
 ├── Dockerfile            # Container build
 ├── docker-compose.yml    # Container orchestration
 └── pyproject.toml        # Python packaging
@@ -239,7 +275,7 @@ VenomStrike/
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run tests (311 tests)
+# Run tests (501 tests)
 pytest
 
 # Run linter
@@ -255,7 +291,9 @@ mypy core/ integrations/
 
 | Version | Codename | Key Features |
 |---------|----------|-------------|
-| v7.0 | **Titan** | OOB verification, payload mutation, WAF fingerprinting, robust timing, input validation |
+| v9.0 | **Chimera** | Adaptive rate limiting, cross-module vulnerability correlation, dynamic scan optimization, SARIF CI/CD output, parameter tampering |
+| v8.0 | Hydra | Smart payload selection, attack chain correlation, Bayesian scoring, response intelligence, adaptive exploitation |
+| v7.0 | Titan | OOB verification, payload mutation, WAF fingerprinting, robust timing, input validation |
 | v6.0 | Viper | Injection URL, response stability, stricter SSRF |
 | v5.0 | Apex | Amass subdomain enum, Wappalyzer fingerprinting |
 | v4.0 | Quantum | Triple confirmation, entropy analysis, cross-correlation, statistical confidence |
