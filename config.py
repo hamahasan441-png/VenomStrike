@@ -1,11 +1,11 @@
-"""Global configuration for VenomStrike v7.0 — Titan Edition."""
+"""Global configuration for VenomStrike v8.0 — Hydra Edition."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-VERSION = "7.0.0"
-CODENAME = "Titan"
+VERSION = "8.0.0"
+CODENAME = "Hydra"
 TOOL_NAME = "VenomStrike"
 AUTHOR = "Security Research Tool"
 
@@ -41,7 +41,7 @@ DEFAULT_TIMEOUT = _int_env("VS_TIMEOUT", 10, lo=1, hi=120)
 DEFAULT_THREADS = _int_env("VS_THREADS", 10, lo=1, hi=100)
 MAX_THREADS = 100
 DEFAULT_DELAY = _float_env("VS_DELAY", 0.5, lo=0.0, hi=60.0)
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/7.0-Titan; Security Testing)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/8.0-Hydra; Security Testing)"
 
 # Retry / resilience
 RETRY_ATTEMPTS = _int_env("VS_RETRY_ATTEMPTS", 3, lo=0, hi=10)
@@ -67,7 +67,10 @@ MAX_CONCURRENT_REQUESTS = _int_env("VS_MAX_CONCURRENT", 50, lo=1, hi=500)
 #              entropy analysis, statistical confidence — maximum accuracy
 #   titan    — v7.0 ultimate: all quantum features + OOB verification,
 #              payload mutation, robust timing, WAF fingerprinting
-_VALID_DEPTHS = ("quick", "standard", "deep", "full", "quantum", "titan")
+#   hydra    — v8.0 supreme: all titan features + smart payload selection,
+#              attack chain correlation, Bayesian confidence scoring,
+#              response intelligence, adaptive multi-stage exploitation
+_VALID_DEPTHS = ("quick", "standard", "deep", "full", "quantum", "titan", "hydra")
 SCAN_DEPTH = os.environ.get("VS_SCAN_DEPTH", "standard").lower()
 if SCAN_DEPTH not in _VALID_DEPTHS:
     SCAN_DEPTH = "standard"
@@ -140,6 +143,31 @@ DEPTH_PRESETS = {
         "robust_timing": True,
         "waf_fingerprinting": True,
     },
+    "hydra": {
+        "crawl_depth": 15,
+        "max_crawl_pages": 5000,
+        "dir_brute_limit": 0,
+        "api_brute_limit": 0,
+        "payload_limit": 0,
+        "validation_attempts": 20,
+        "min_confidence": 20,
+        # Quantum features
+        "cross_correlation": True,
+        "entropy_analysis": True,
+        "triple_confirm": True,
+        "statistical_confidence": True,
+        # Titan features
+        "oob_verification": True,
+        "payload_mutation": True,
+        "robust_timing": True,
+        "waf_fingerprinting": True,
+        # Hydra v8.0 features
+        "smart_payload_selection": True,
+        "attack_chain_correlation": True,
+        "bayesian_scoring": True,
+        "response_intelligence": True,
+        "adaptive_exploitation": True,
+    },
 }
 
 # Confidence thresholds
@@ -167,6 +195,16 @@ PAYLOAD_MUTATION_ENABLED = os.environ.get("VS_PAYLOAD_MUTATION", "true").lower()
 ROBUST_TIMING_ENABLED = os.environ.get("VS_ROBUST_TIMING", "true").lower() == "true"
 ROBUST_TIMING_PERCENTILE = _float_env("VS_ROBUST_TIMING_PERCENTILE", 95.0, lo=50.0, hi=99.9)
 WAF_FINGERPRINT_ENABLED = os.environ.get("VS_WAF_FINGERPRINT", "true").lower() == "true"
+
+# Hydra intelligence settings (v8.0)
+SMART_PAYLOAD_SELECTION = os.environ.get("VS_SMART_PAYLOAD", "true").lower() == "true"
+ATTACK_CHAIN_CORRELATION = os.environ.get("VS_ATTACK_CHAIN", "true").lower() == "true"
+BAYESIAN_SCORING_ENABLED = os.environ.get("VS_BAYESIAN_SCORING", "true").lower() == "true"
+RESPONSE_INTELLIGENCE_ENABLED = os.environ.get("VS_RESPONSE_INTELLIGENCE", "true").lower() == "true"
+ADAPTIVE_EXPLOITATION = os.environ.get("VS_ADAPTIVE_EXPLOITATION", "true").lower() == "true"
+BAYESIAN_PRIOR_CONFIDENCE = _float_env("VS_BAYESIAN_PRIOR", 0.3, lo=0.01, hi=0.99)
+ATTACK_CHAIN_MAX_DEPTH = _int_env("VS_CHAIN_MAX_DEPTH", 5, lo=1, hi=20)
+SMART_PAYLOAD_TOP_N = _int_env("VS_SMART_TOP_N", 25, lo=5, hi=200)
 
 # Database
 DB_PATH = os.environ.get("VS_DB_PATH", os.path.join(os.path.dirname(__file__), "venomstrike.db"))
