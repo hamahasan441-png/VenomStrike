@@ -64,7 +64,7 @@ def test_depth_presets_keys():
 def test_depth_presets_ordering():
     """Deeper levels should have higher crawl depth and more pages."""
     import config
-    levels = ["quick", "standard", "deep", "full", "quantum", "titan"]
+    levels = ["quick", "standard", "deep", "full", "quantum", "titan", "hydra"]
     for i in range(len(levels) - 1):
         a = config.DEPTH_PRESETS[levels[i]]
         b = config.DEPTH_PRESETS[levels[i + 1]]
@@ -73,10 +73,10 @@ def test_depth_presets_ordering():
 
 
 def test_version_is_5():
-    """Version should be 7.0.0 for Titan edition."""
+    """Version should be 8.0.0 for Hydra edition."""
     import config
-    assert config.VERSION == "7.0.0"
-    assert config.CODENAME == "Titan"
+    assert config.VERSION == "8.0.0"
+    assert config.CODENAME == "Hydra"
 
 
 def test_apex_integration_config_keys():

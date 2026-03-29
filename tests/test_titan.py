@@ -25,11 +25,11 @@ class TestTitanConfig:
 
     def test_version_is_7(self):
         import config
-        assert config.VERSION == "7.0.0"
+        assert config.VERSION == "8.0.0"
 
     def test_codename_is_titan(self):
         import config
-        assert config.CODENAME == "Titan"
+        assert config.CODENAME == "Hydra"
 
     def test_titan_depth_preset_exists(self):
         import config
@@ -88,8 +88,8 @@ class TestTitanConfig:
 
     def test_user_agent_contains_titan(self):
         import config
-        assert "Titan" in config.DEFAULT_USER_AGENT
-        assert "7.0" in config.DEFAULT_USER_AGENT
+        assert "Hydra" in config.DEFAULT_USER_AGENT
+        assert "8.0" in config.DEFAULT_USER_AGENT
 
     def test_depth_presets_ordering_includes_titan(self):
         """Titan should have highest crawl_depth of all levels."""
