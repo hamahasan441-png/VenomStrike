@@ -25,11 +25,11 @@ class TestQuantumConfig:
 
     def test_version_is_8(self):
         import config
-        assert config.VERSION == "9.0.0"
+        assert config.VERSION == "10.0.0"
 
     def test_codename_is_hydra(self):
         import config
-        assert config.CODENAME == "Chimera"
+        assert config.CODENAME == "Phoenix"
 
     def test_quantum_depth_preset_exists(self):
         import config
@@ -90,7 +90,7 @@ class TestQuantumConfig:
 
     def test_user_agent_contains_hydra(self):
         import config
-        assert "Chimera" in config.DEFAULT_USER_AGENT or "9.0" in config.DEFAULT_USER_AGENT
+        assert "Phoenix" in config.DEFAULT_USER_AGENT or "10.0" in config.DEFAULT_USER_AGENT
 
 
 # ── Entropy-based anomaly detection ───────────────────────────────
