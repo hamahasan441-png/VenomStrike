@@ -1,6 +1,6 @@
-# 🗡️ VenomStrike v9.0 — Chimera Edition
+# 🗡️ VenomStrike v10.0 — Phoenix Edition
 
-> **Advanced Security Testing & Vulnerability Debugging Framework — Chimera Edition — Educational Tool**
+> **Advanced Security Testing & Vulnerability Debugging Framework — Phoenix Edition — Educational Tool**
 
 ⚠️ **LEGAL DISCLAIMER**: VenomStrike is for **authorized security testing ONLY**. You must have explicit written permission to test any system. Unauthorized testing is illegal and unethical.
 
@@ -15,13 +15,18 @@
 - **False positive filtering** with multi-stage validation and confidence scoring
 - **Learning mode**: fix code, explanations, and OWASP mapping for every finding
 
-### Chimera Intelligence Engine (v9.0)
+### Phoenix Intelligence Engine (v10.0)
 
-VenomStrike v9.0 "Chimera" is the apex edition, building on all previous versions to deliver the most comprehensive, intelligent, and accurate security testing framework:
+VenomStrike v10.0 "Phoenix" is the pinnacle edition, building on all previous versions to deliver the smartest, most accurate, and most efficient security testing framework:
 
 | Feature | Description |
 |---------|-------------|
-| **Adaptive Rate Limiting** | Automatically adjusts request speed based on target responsiveness, avoiding detection and rate-limit blocks. |
+| **Smart Parameter Deduplication** | Intelligently groups similar parameters and tests representative samples, eliminating redundant scanning (v10.0). |
+| **Context-Aware Validation** | Technology-sensitive vulnerability validation that adapts to detected frameworks (Django, Rails, Spring, etc.) to slash false positives (v10.0). |
+| **Intelligent Payload Minimization** | Coverage-based payload selection that maintains detection breadth with a fraction of the payloads (v10.0). |
+| **Vulnerability Impact Analysis** | Real-world exploitability rating with business impact estimation and prioritised remediation ordering (v10.0). |
+| **Adaptive Scan Profiling** | Dynamic target behaviour profiling that adjusts scan intensity, depth, and speed based on real-time observations (v10.0). |
+| **Adaptive Rate Limiting** | Automatically adjusts request speed based on target responsiveness, avoiding detection and rate-limit blocks (v9.0). |
 | **Cross-Module Vulnerability Correlation** | Correlates findings across different modules to identify attack chains and compound vulnerabilities. |
 | **Dynamic Scan Optimization** | Intelligently prioritizes endpoints and payloads based on real-time scan results for maximum efficiency. |
 | **SARIF CI/CD Output** | Generates SARIF-format reports for seamless integration with GitHub Code Scanning and other CI/CD pipelines. |
@@ -51,7 +56,8 @@ Control scanning thoroughness with the `--depth` flag:
 | `quantum` | 7 levels, 1000 pages | All paths | All endpoints | All | 10x | Ultra-deep v4.0 — triple confirm, cross-correlation, entropy analysis |
 | `titan` | 10 levels, 2000 pages | All paths | All endpoints | All | 15x | Ultimate v7.0 — all quantum + OOB verification, payload mutation, WAF fingerprinting |
 | `hydra` | 15 levels, 5000 pages | All paths | All endpoints | All | 20x | Supreme v8.0 — all titan + smart payloads, attack chains, Bayesian scoring, response intelligence |
-| `chimera` | 20 levels, 10000 pages | All paths | All endpoints | All | 25x | **Apex v9.0** — all hydra + adaptive rate limiting, vulnerability correlation, scan optimization, SARIF output, parameter tampering |
+| `chimera` | 20 levels, 10000 pages | All paths | All endpoints | All | 25x | Apex v9.0 — all hydra + adaptive rate limiting, vulnerability correlation, scan optimization, SARIF output, parameter tampering |
+| `phoenix` | 25 levels, 15000 pages | All paths | All endpoints | All | 30x | **Pinnacle v10.0** — all chimera + smart param dedup, context validation, payload minimization, impact analysis, scan profiling |
 
 ### Expanded Payload & Wordlist Coverage
 - **950+ wordlist entries** across 6 categories (directories, API endpoints, subdomains, backup files, hidden params, user agents)
@@ -138,6 +144,9 @@ python venom.py -u https://target.com --mode auto --depth hydra --threads 50
 # Chimera scan — apex v9.0 with adaptive rate limiting, vulnerability correlation, SARIF output
 python venom.py -u https://target.com --mode auto --depth chimera --threads 50
 
+# Phoenix scan — pinnacle v10.0 with smart dedup, context validation, impact analysis
+python venom.py -u https://target.com --mode auto --depth phoenix --threads 50
+
 # With tool integrations
 python venom.py -u https://target.com --mode auto --nmap --nuclei
 
@@ -166,7 +175,14 @@ All settings can be configured via environment variables or `.env` file:
 VS_THREADS=10          # Concurrent threads
 VS_TIMEOUT=10          # Request timeout (seconds)
 VS_MIN_CONFIDENCE=70   # Minimum confidence to report (0-100)
-VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full, quantum, titan, hydra, chimera
+VS_SCAN_DEPTH=standard # Scan depth: quick, standard, deep, full, quantum, titan, hydra, chimera, phoenix
+
+# Phoenix v10.0 settings
+VS_PARAM_DEDUP=true                               # Smart parameter deduplication
+VS_CONTEXT_VALIDATION=true                         # Context-aware vulnerability validation
+VS_PAYLOAD_MINIMIZER=true                          # Intelligent payload minimization
+VS_IMPACT_ANALYSIS=true                            # Vulnerability impact analysis
+VS_SCAN_PROFILER=true                              # Adaptive scan profiling
 
 # Chimera v9.0 settings
 VS_ADAPTIVE_RATE_LIMIT=true                   # Adaptive rate limiting
@@ -216,6 +232,11 @@ VenomStrike/
 │   ├── oob_verifier.py   # Out-of-Band verification
 │   ├── payload_mutator.py # Context-aware payload mutation
 │   ├── waf_evasion.py    # WAF detection + fingerprinting
+│   ├── param_deduplicator.py # Smart param deduplication (v10.0)
+│   ├── context_validator.py # Context-aware validation (v10.0)
+│   ├── payload_minimizer.py # Intelligent payload minimization (v10.0)
+│   ├── impact_analyzer.py # Vulnerability impact analysis (v10.0)
+│   ├── scan_profiler.py  # Adaptive scan profiling (v10.0)
 │   ├── rate_limiter.py   # Adaptive rate limiting (v9.0)
 │   ├── vulnerability_correlator.py # Cross-module correlation (v9.0)
 │   ├── scan_optimizer.py # Dynamic scan optimization (v9.0)
@@ -246,7 +267,7 @@ VenomStrike/
 ├── wordlists/            # Directory/API wordlists
 ├── templates/            # Flask HTML templates
 ├── static/               # CSS & JavaScript
-├── tests/                # Test suite (501 tests)
+├── tests/                # Test suite (600+ tests)
 ├── Dockerfile            # Container build
 ├── docker-compose.yml    # Container orchestration
 └── pyproject.toml        # Python packaging
@@ -275,7 +296,7 @@ VenomStrike/
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run tests (501 tests)
+# Run tests (600+ tests)
 pytest
 
 # Run linter
@@ -291,7 +312,8 @@ mypy core/ integrations/
 
 | Version | Codename | Key Features |
 |---------|----------|-------------|
-| v9.0 | **Chimera** | Adaptive rate limiting, cross-module vulnerability correlation, dynamic scan optimization, SARIF CI/CD output, parameter tampering |
+| v10.0 | **Phoenix** | Smart parameter deduplication, context-aware validation, intelligent payload minimization, vulnerability impact analysis, adaptive scan profiling |
+| v9.0 | Chimera | Adaptive rate limiting, cross-module vulnerability correlation, dynamic scan optimization, SARIF CI/CD output, parameter tampering |
 | v8.0 | Hydra | Smart payload selection, attack chain correlation, Bayesian scoring, response intelligence, adaptive exploitation |
 | v7.0 | Titan | OOB verification, payload mutation, WAF fingerprinting, robust timing, input validation |
 | v6.0 | Viper | Injection URL, response stability, stricter SSRF |

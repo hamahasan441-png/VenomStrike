@@ -165,6 +165,23 @@ class ScanEngine:
         
         log_info("Phase 2: Exploitation")
         modules = self._get_modules(mode, category, module)
+
+        # Phase 1.8: Parameter Deduplication (v10.0 Phoenix)
+        if self.depth_preset.get("param_deduplication"):
+            log_info("Phase 1.8: Smart Parameter Deduplication")
+            try:
+                from core.param_deduplicator import SmartParamDeduplicator
+                deduplicator = SmartParamDeduplicator()
+                endpoints = deduplicator.deduplicate_endpoints(endpoints)
+                stats = deduplicator.get_stats()
+                if stats["reduction_percent"] > 0:
+                    log_info(
+                        f"Parameter dedup: {stats['total_before']} → "
+                        f"{stats['total_after']} params "
+                        f"({stats['reduction_percent']}% reduction)"
+                    )
+            except Exception as e:
+                log_warning(f"Parameter deduplication error: {e}")
         
         module_timeout = MODULE_TIMEOUT if MODULE_TIMEOUT > 0 else None
         with ThreadPoolExecutor(max_workers=self.threads) as executor:
@@ -276,7 +293,37 @@ class ScanEngine:
                 self._correlation_result = correlation_result
             except Exception as e:
                 log_warning(f"Vulnerability correlation error: {e}")
-        
+
+        # Phase 3g: Context-Aware Validation (v10.0 Phoenix)
+        if self.depth_preset.get("context_validation"):
+            log_info("Phase 3g: Context-Aware Vulnerability Validation")
+            try:
+                from core.context_validator import ContextValidator
+                ctx_validator = ContextValidator()
+                self.findings = ctx_validator.validate_findings(self.findings)
+                stats = ctx_validator.get_stats()
+                if stats["rejected_as_fp"] > 0:
+                    log_info(
+                        f"Context validation: {stats['rejected_as_fp']} "
+                        f"finding(s) flagged as technology-specific FP"
+                    )
+            except Exception as e:
+                log_warning(f"Context validation error: {e}")
+
+        # Phase 3h: Impact Analysis (v10.0 Phoenix)
+        if self.depth_preset.get("impact_analysis"):
+            log_info("Phase 3h: Vulnerability Impact Analysis")
+            try:
+                from core.impact_analyzer import ImpactAnalyzer
+                analyzer = ImpactAnalyzer()
+                self.findings = analyzer.analyze_findings(self.findings)
+                log_info(
+                    f"Impact analysis: {analyzer.analyzed_count} "
+                    f"finding(s) analysed and prioritised"
+                )
+            except Exception as e:
+                log_warning(f"Impact analysis error: {e}")
+
         # Phase 4: CVE Enrichment
         if self._integrations.get("cve"):
             log_info("Phase 4: CVE Enrichment")

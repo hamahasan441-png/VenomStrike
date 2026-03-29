@@ -1,11 +1,11 @@
-"""Global configuration for VenomStrike v9.0 — Chimera Edition."""
+"""Global configuration for VenomStrike v10.0 — Phoenix Edition."""
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-VERSION = "9.0.0"
-CODENAME = "Chimera"
+VERSION = "10.0.0"
+CODENAME = "Phoenix"
 TOOL_NAME = "VenomStrike"
 AUTHOR = "Security Research Tool"
 
@@ -41,7 +41,7 @@ DEFAULT_TIMEOUT = _int_env("VS_TIMEOUT", 10, lo=1, hi=120)
 DEFAULT_THREADS = _int_env("VS_THREADS", 10, lo=1, hi=100)
 MAX_THREADS = 100
 DEFAULT_DELAY = _float_env("VS_DELAY", 0.5, lo=0.0, hi=60.0)
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/9.0-Chimera; Security Testing)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; VenomStrike/10.0-Phoenix; Security Testing)"
 
 # Retry / resilience
 RETRY_ATTEMPTS = _int_env("VS_RETRY_ATTEMPTS", 3, lo=0, hi=10)
@@ -73,7 +73,10 @@ MAX_CONCURRENT_REQUESTS = _int_env("VS_MAX_CONCURRENT", 50, lo=1, hi=500)
 #   chimera  — v9.0 apex: all hydra features + adaptive rate limiting,
 #              cross-module vulnerability correlation, dynamic scan
 #              optimization, SARIF CI/CD output, parameter tampering
-_VALID_DEPTHS = ("quick", "standard", "deep", "full", "quantum", "titan", "hydra", "chimera")
+#   phoenix  — v10.0 ultimate: all chimera features + smart parameter
+#              deduplication, context-aware validation, intelligent payload
+#              minimization, vulnerability impact analysis, adaptive scan profiling
+_VALID_DEPTHS = ("quick", "standard", "deep", "full", "quantum", "titan", "hydra", "chimera", "phoenix")
 SCAN_DEPTH = os.environ.get("VS_SCAN_DEPTH", "standard").lower()
 if SCAN_DEPTH not in _VALID_DEPTHS:
     SCAN_DEPTH = "standard"
@@ -202,6 +205,43 @@ DEPTH_PRESETS = {
         "sarif_output": True,
         "parameter_tampering": True,
     },
+    "phoenix": {
+        "crawl_depth": 25,
+        "max_crawl_pages": 15000,
+        "dir_brute_limit": 0,
+        "api_brute_limit": 0,
+        "payload_limit": 0,
+        "validation_attempts": 30,
+        "min_confidence": 10,
+        # Quantum features
+        "cross_correlation": True,
+        "entropy_analysis": True,
+        "triple_confirm": True,
+        "statistical_confidence": True,
+        # Titan features
+        "oob_verification": True,
+        "payload_mutation": True,
+        "robust_timing": True,
+        "waf_fingerprinting": True,
+        # Hydra v8.0 features
+        "smart_payload_selection": True,
+        "attack_chain_correlation": True,
+        "bayesian_scoring": True,
+        "response_intelligence": True,
+        "adaptive_exploitation": True,
+        # Chimera v9.0 features
+        "adaptive_rate_limiting": True,
+        "vulnerability_correlation": True,
+        "scan_optimization": True,
+        "sarif_output": True,
+        "parameter_tampering": True,
+        # Phoenix v10.0 features
+        "param_deduplication": True,
+        "context_validation": True,
+        "payload_minimization": True,
+        "impact_analysis": True,
+        "scan_profiling": True,
+    },
 }
 
 # Confidence thresholds
@@ -302,6 +342,22 @@ SARIF_OUTPUT_ENABLED = os.environ.get("VS_SARIF_OUTPUT", "false").lower() == "tr
 PARAMETER_TAMPERING_ENABLED = os.environ.get("VS_PARAM_TAMPERING", "true").lower() == "true"
 SCAN_OPTIMIZER_MIN_ENDPOINTS = _int_env("VS_OPTIMIZER_MIN_ENDPOINTS", 10, lo=1, hi=100)
 CORRELATION_MIN_FINDINGS = _int_env("VS_CORRELATION_MIN_FINDINGS", 2, lo=1, hi=50)
+
+# Phoenix intelligence settings (v10.0)
+PARAM_DEDUP_ENABLED = os.environ.get("VS_PARAM_DEDUP", "true").lower() == "true"
+PARAM_DEDUP_SIMILARITY_THRESHOLD = _float_env("VS_PARAM_DEDUP_THRESHOLD", 0.8, lo=0.1, hi=1.0)
+PARAM_DEDUP_MAX_PER_TYPE = _int_env("VS_PARAM_DEDUP_MAX", 5, lo=1, hi=50)
+CONTEXT_VALIDATION_ENABLED = os.environ.get("VS_CONTEXT_VALIDATION", "true").lower() == "true"
+CONTEXT_VALIDATION_BOOST = _int_env("VS_CONTEXT_BOOST", 10, lo=0, hi=30)
+CONTEXT_VALIDATION_PENALTY = _int_env("VS_CONTEXT_PENALTY", 25, lo=0, hi=50)
+PAYLOAD_MINIMIZER_ENABLED = os.environ.get("VS_PAYLOAD_MINIMIZER", "true").lower() == "true"
+PAYLOAD_MINIMIZER_MAX_RATIO = _float_env("VS_PAYLOAD_MAX_RATIO", 0.5, lo=0.1, hi=1.0)
+PAYLOAD_MINIMIZER_MIN_PAYLOADS = _int_env("VS_PAYLOAD_MIN_COUNT", 5, lo=1, hi=100)
+IMPACT_ANALYSIS_ENABLED = os.environ.get("VS_IMPACT_ANALYSIS", "true").lower() == "true"
+SCAN_PROFILER_ENABLED = os.environ.get("VS_SCAN_PROFILER", "true").lower() == "true"
+SCAN_PROFILER_WINDOW_SIZE = _int_env("VS_PROFILER_WINDOW", 100, lo=10, hi=1000)
+SCAN_PROFILER_ERROR_THRESHOLD = _float_env("VS_PROFILER_ERROR_THRESHOLD", 0.3, lo=0.05, hi=0.9)
+SCAN_PROFILER_LATENCY_MULTIPLIER = _float_env("VS_PROFILER_LATENCY_MULT", 3.0, lo=1.5, hi=10.0)
 
 # Legal
 LEGAL_DISCLAIMER = """
