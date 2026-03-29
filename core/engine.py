@@ -258,6 +258,24 @@ class ScanEngine:
                         )
             except Exception as e:
                 log_warning(f"Attack chain correlation error: {e}")
+
+        # Phase 3f: Vulnerability Correlation (v9.0 Chimera)
+        if self.depth_preset.get("vulnerability_correlation"):
+            log_info("Phase 3f: Cross-Module Vulnerability Correlation")
+            try:
+                from core.vulnerability_correlator import VulnerabilityCorrelator
+                vuln_correlator = VulnerabilityCorrelator()
+                correlation_result = vuln_correlator.correlate(self.findings)
+                compounds = correlation_result.get("compound_vulnerabilities", [])
+                systemic = correlation_result.get("systemic_weaknesses", [])
+                if compounds:
+                    log_info(f"Detected {len(compounds)} compound vulnerability/ies")
+                if systemic:
+                    log_warning(f"Detected {len(systemic)} systemic weakness(es)")
+                # Store correlation data for reporting
+                self._correlation_result = correlation_result
+            except Exception as e:
+                log_warning(f"Vulnerability correlation error: {e}")
         
         # Phase 4: CVE Enrichment
         if self._integrations.get("cve"):
@@ -518,7 +536,7 @@ class ScanEngine:
                 "auth": ["auth_bypass", "jwt", "session", "oauth", "idor", "account_takeover"],
                 "logic": ["race_condition", "business_logic", "mass_assignment", "rate_limit"],
                 "advanced": ["graphql", "websocket", "cache_poison", "crlf", "host_header", "subdomain_takeover",
-                             "deserialization", "api_key_exposure", "http2_desync"],
+                             "deserialization", "api_key_exposure", "http2_desync", "parameter_tampering"],
             }
             allowed = category_map.get(category, [])
             return [(k, v) for k, v in all_modules.items() if k in allowed]
@@ -567,6 +585,7 @@ class ScanEngine:
             ("deserialization", "exploits.advanced.deserialization_exploiter", "DeserializationExploiter"),
             ("api_key_exposure", "exploits.advanced.api_key_exposure_exploiter", "APIKeyExposureExploiter"),
             ("http2_desync", "exploits.advanced.http2_desync_exploiter", "HTTP2DesyncExploiter"),
+            ("parameter_tampering", "exploits.advanced.parameter_tampering_exploiter", "ParameterTamperingExploiter"),
         ]
         for mod_name, mod_path, class_name in module_paths:
             try:
