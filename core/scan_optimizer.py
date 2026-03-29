@@ -21,7 +21,7 @@ For authorized security testing only.
 import logging
 import re
 from typing import Dict, List, Optional, Set, Tuple
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from config import SCAN_OPTIMIZATION_ENABLED, SCAN_OPTIMIZER_MIN_ENDPOINTS
 

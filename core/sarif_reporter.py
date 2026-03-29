@@ -19,7 +19,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from config import VERSION, CODENAME, TOOL_NAME
+from config import CODENAME, TOOL_NAME, VERSION
 
 logger = logging.getLogger("venomstrike.sarif_reporter")
 

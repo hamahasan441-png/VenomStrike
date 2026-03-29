@@ -24,9 +24,9 @@ from typing import Dict, Optional
 
 from config import (
     ADAPTIVE_RATE_LIMITING,
-    RATE_LIMIT_MIN_DELAY,
-    RATE_LIMIT_MAX_DELAY,
     RATE_LIMIT_ERROR_THRESHOLD,
+    RATE_LIMIT_MAX_DELAY,
+    RATE_LIMIT_MIN_DELAY,
 )
 
 logger = logging.getLogger("venomstrike.rate_limiter")
