@@ -301,6 +301,40 @@ def build_proof_description(vuln_type: str, proof_data: Dict) -> str:
             f"based on {proof_data.get('sample_count', 0)} independent measurements."
         )
 
+    if "deserialization_type" in proof_data:
+        parts.append(
+            f"Insecure deserialization detected: {proof_data['deserialization_type']} "
+            f"deserialization indicator pattern triggered in response after "
+            f"injecting serialized object payload."
+        )
+
+    if "key_type" in proof_data:
+        parts.append(
+            f"API key exposure: {proof_data.get('description', 'Secret')} "
+            f"({proof_data['key_type']}) found in response body. "
+            f"{proof_data.get('match_count', 1)} instance(s) detected."
+        )
+
+    if "desync_type" in proof_data:
+        parts.append(
+            f"HTTP/2 desynchronization: {proof_data['desync_type']} vector "
+            f"detected. Server responded anomalously to request boundary "
+            f"manipulation."
+        )
+
+    if "bayesian_posterior" in proof_data:
+        parts.append(
+            f"Bayesian confidence: posterior probability "
+            f"{proof_data['bayesian_posterior']:.1%} based on "
+            f"{proof_data.get('signals_used', 0)} evidence signals."
+        )
+
+    if "attack_chain" in proof_data:
+        parts.append(
+            f"Attack chain: this finding participates in a {proof_data.get('chain_description', '')} "
+            f"attack chain (impact: {proof_data.get('chain_impact', 0)}/10)."
+        )
+
     if not parts:
         parts.append(f"Vulnerability detected via {vuln_type} testing.")
 

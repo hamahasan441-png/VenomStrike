@@ -1,0 +1,12 @@
+rO0ABXNyABFqYXZhLmxhbmcuSW50ZWdlcg==
+O:8:"stdClass":0:{}
+a:1:{s:4:"test";s:5:"probe";}
+O:3:"Foo":1:{s:3:"bar";s:5:"probe";}
+(dp0\nS'test'\np1\nS'probe'\np2\ns.
+{"$type":"System.String","$value":"probe"}
+O:4:"Test":1:{s:4:"data";s:24:"deserialize_probe_marker";}
+O:7:"Exploit":2:{s:4:"cmd";s:2:"id";s:3:"arg";s:0:"";}
+a:2:{i:0;s:4:"test";i:1;O:8:"stdClass":0:{}}
+rO0ABXNyABNqYXZhLmxhbmcuSW50ZWdlcg==
+{"__class__":"probe","cmd":"id"}
+{"\u0024type":"System.Object","value":"test"}

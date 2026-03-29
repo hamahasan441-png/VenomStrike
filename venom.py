@@ -55,6 +55,7 @@ Examples:
   python venom.py -u https://target.com --mode auto --depth full --threads 50
   python venom.py -u https://target.com --mode auto --depth quantum --threads 50
   python venom.py -u https://target.com --mode auto --depth titan --threads 50
+  python venom.py -u https://target.com --mode auto --depth hydra --threads 50
 
 ⚠️  FOR AUTHORIZED TESTING ONLY — Ensure you have written permission
         """
@@ -72,7 +73,8 @@ Examples:
                  "ssrf", "lfi", "rfi", "file_upload", "rce", "http_smuggling",
                  "auth_bypass", "jwt", "session", "oauth", "idor", "account_takeover",
                  "race_condition", "business_logic", "mass_assignment", "rate_limit",
-                 "graphql", "websocket", "cache_poison", "crlf", "host_header", "subdomain_takeover"],
+                 "graphql", "websocket", "cache_poison", "crlf", "host_header", "subdomain_takeover",
+                 "deserialization", "api_key_exposure", "http2_desync"],
         help="Scan mode or specific module"
     )
     
@@ -90,8 +92,8 @@ Examples:
     parser.add_argument("--delay", type=float, default=0, help="Delay between requests (seconds, 0-60)")
     parser.add_argument(
         "--depth", default="standard",
-        choices=["quick", "standard", "deep", "full", "quantum", "titan"],
-        help="Scan depth: quick (surface), standard (default), deep (thorough), full (maximum), quantum (ultra-deep v4.0), titan (ultimate v7.0)"
+        choices=["quick", "standard", "deep", "full", "quantum", "titan", "hydra"],
+        help="Scan depth: quick (surface), standard (default), deep (thorough), full (maximum), quantum (ultra-deep v4.0), titan (ultimate v7.0), hydra (supreme v8.0)"
     )
     
     # Output options
@@ -176,6 +178,7 @@ def main():
         "auth_bypass", "jwt", "session", "oauth", "idor", "account_takeover",
         "race_condition", "business_logic", "mass_assignment", "rate_limit",
         "graphql", "websocket", "cache_poison", "crlf", "host_header", "subdomain_takeover",
+        "deserialization", "api_key_exposure", "http2_desync",
     }
     
     # Enable integrations based on CLI flags

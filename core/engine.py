@@ -219,6 +219,45 @@ class ScanEngine:
                     log_info("OOB verification: no callback domain configured (dry-run)")
             except Exception as e:
                 log_warning(f"OOB verification error: {e}")
+
+        # Phase 3d: Bayesian Confidence Scoring (v8.0 Hydra)
+        if self.depth_preset.get("bayesian_scoring"):
+            log_info("Phase 3d: Bayesian Confidence Scoring")
+            try:
+                from core.bayesian_scorer import BayesianConfidenceScorer
+                scorer = BayesianConfidenceScorer()
+                for finding in self.findings:
+                    signals = self._extract_evidence_signals(finding)
+                    if signals:
+                        result = scorer.combine_with_existing(
+                            finding.get("confidence", 50), signals
+                        )
+                        finding["confidence"] = result["confidence"]
+                        finding["bayesian_posterior"] = result["posterior"]
+                        finding["bayesian_signals"] = result["signals_used"]
+            except Exception as e:
+                log_warning(f"Bayesian scoring error: {e}")
+
+        # Phase 3e: Attack Chain Correlation (v8.0 Hydra)
+        if self.depth_preset.get("attack_chain_correlation"):
+            log_info("Phase 3e: Attack Chain Correlation")
+            try:
+                from core.attack_chain import AttackChainCorrelator
+                correlator = AttackChainCorrelator()
+                chains = correlator.correlate(self.findings)
+                if chains:
+                    self.findings = correlator.enrich_findings_with_chains(
+                        self.findings, chains
+                    )
+                    log_info(f"Detected {len(chains)} attack chain(s)")
+                    for chain in chains:
+                        log_info(
+                            f"  Chain: {chain.description} "
+                            f"(impact: {chain.impact_rating}/10, "
+                            f"stages: {len(chain.stages)})"
+                        )
+            except Exception as e:
+                log_warning(f"Attack chain correlation error: {e}")
         
         # Phase 4: CVE Enrichment
         if self._integrations.get("cve"):
@@ -404,6 +443,55 @@ class ScanEngine:
         if removed > 0:
             log_info(f"Deduplication: removed {removed} duplicate findings")
         return deduped
+
+    @staticmethod
+    def _extract_evidence_signals(finding: Dict) -> Dict:
+        """Extract Bayesian evidence signals from a finding for scoring.
+
+        Examines the evidence package, verification status, and proof data
+        to build a signal dict suitable for BayesianConfidenceScorer.
+        """
+        signals = {}
+        evidence = finding.get("evidence", {})
+        if not isinstance(evidence, dict):
+            return signals
+
+        proof = evidence.get("proof_data", {})
+
+        # Map proof data keys to Bayesian signals
+        if proof.get("error_pattern"):
+            signals["error_pattern"] = True
+        if proof.get("reflected_payload") or proof.get("reflected_part"):
+            signals["payload_reflected"] = True
+        if proof.get("timing_diff"):
+            signals["timing_confirmed"] = True
+        if proof.get("response_diff_percent"):
+            signals["response_diff"] = True
+        if proof.get("baseline_missing_pattern"):
+            signals["baseline_clean"] = True
+        if proof.get("content_match") or proof.get("file_content_indicator"):
+            signals["content_match"] = True
+        if proof.get("entropy_delta"):
+            signals["entropy_anomaly"] = True
+        if proof.get("cross_correlated"):
+            signals["cross_correlated"] = True
+        if proof.get("oob_verified"):
+            signals["oob_verified"] = True
+        if proof.get("triple_confirmation"):
+            signals["triple_confirmed"] = True
+
+        # Retest status
+        v_status = finding.get("verification_status", "")
+        if v_status == "confirmed":
+            signals["retest_confirmed"] = True
+        elif v_status in ("suspicious", "unverified"):
+            signals["retest_confirmed"] = False
+
+        # Attack chain correlation
+        if finding.get("attack_chains"):
+            signals["chain_correlated"] = True
+
+        return signals
     
     def _run_module_safe(self, mod_name: str, mod_func, target: Target, 
                          endpoints: List[Dict], config: Dict):
@@ -429,7 +517,8 @@ class ScanEngine:
                 "server_side": ["ssrf", "lfi", "rfi", "file_upload", "rce", "http_smuggling"],
                 "auth": ["auth_bypass", "jwt", "session", "oauth", "idor", "account_takeover"],
                 "logic": ["race_condition", "business_logic", "mass_assignment", "rate_limit"],
-                "advanced": ["graphql", "websocket", "cache_poison", "crlf", "host_header", "subdomain_takeover"],
+                "advanced": ["graphql", "websocket", "cache_poison", "crlf", "host_header", "subdomain_takeover",
+                             "deserialization", "api_key_exposure", "http2_desync"],
             }
             allowed = category_map.get(category, [])
             return [(k, v) for k, v in all_modules.items() if k in allowed]
@@ -475,6 +564,9 @@ class ScanEngine:
             ("crlf", "exploits.advanced.crlf_exploiter", "CRLFExploiter"),
             ("host_header", "exploits.advanced.host_header_exploiter", "HostHeaderExploiter"),
             ("subdomain_takeover", "exploits.advanced.subdomain_takeover_exploiter", "SubdomainTakeoverExploiter"),
+            ("deserialization", "exploits.advanced.deserialization_exploiter", "DeserializationExploiter"),
+            ("api_key_exposure", "exploits.advanced.api_key_exposure_exploiter", "APIKeyExposureExploiter"),
+            ("http2_desync", "exploits.advanced.http2_desync_exploiter", "HTTP2DesyncExploiter"),
         ]
         for mod_name, mod_path, class_name in module_paths:
             try:
