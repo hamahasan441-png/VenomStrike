@@ -54,7 +54,7 @@ PAYLOAD_CATEGORIES: Dict[str, List[str]] = {
         r"(?i)(SLEEP|WAITFOR|DELAY|BENCHMARK|pg_sleep)",
     ],
     "sqli_stacked": [
-        r";\s*(?i)(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE)",
+        r"(?i);\s*(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE)",
     ],
     # XSS categories
     "xss_script": [
