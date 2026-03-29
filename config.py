@@ -303,7 +303,7 @@ SEVERITY_COLORS = {
 
 # Flask
 FLASK_SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", os.urandom(32).hex())
-FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
 FLASK_HOST = os.environ.get("FLASK_HOST", "127.0.0.1")
 FLASK_PORT = _int_env("FLASK_PORT", 5000, lo=1, hi=65535)
 
