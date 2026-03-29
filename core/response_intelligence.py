@@ -332,7 +332,7 @@ class ResponseIntelligence:
 
         if "php" in powered_by or "php" in server:
             detected.append("php")
-        if "asp.net" in powered_by or "asp.net" in server:
+        if powered_by.startswith("asp.net") or server.startswith("asp.net"):
             detected.append("dotnet")
         if "express" in powered_by:
             detected.append("node")
