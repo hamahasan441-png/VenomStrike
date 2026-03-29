@@ -27,11 +27,11 @@ class TestHydraConfig:
 
     def test_version_is_8(self):
         import config
-        assert config.VERSION == "9.0.0"
+        assert config.VERSION == "10.0.0"
 
     def test_codename_is_hydra(self):
         import config
-        assert config.CODENAME == "Chimera"
+        assert config.CODENAME == "Phoenix"
 
     def test_hydra_depth_preset_exists(self):
         import config
@@ -93,8 +93,8 @@ class TestHydraConfig:
 
     def test_user_agent_contains_hydra(self):
         import config
-        assert "Chimera" in config.DEFAULT_USER_AGENT
-        assert "9.0" in config.DEFAULT_USER_AGENT
+        assert "Phoenix" in config.DEFAULT_USER_AGENT
+        assert "10.0" in config.DEFAULT_USER_AGENT
 
     def test_depth_presets_ordering_includes_hydra(self):
         """Hydra should have highest crawl_depth of all levels."""

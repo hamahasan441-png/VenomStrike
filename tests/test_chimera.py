@@ -28,11 +28,11 @@ class TestChimeraConfig:
 
     def test_version_is_9(self):
         import config
-        assert config.VERSION == "9.0.0"
+        assert config.VERSION == "10.0.0"
 
     def test_codename_is_chimera(self):
         import config
-        assert config.CODENAME == "Chimera"
+        assert config.CODENAME == "Phoenix"
 
     def test_chimera_depth_preset_exists(self):
         import config
@@ -99,11 +99,11 @@ class TestChimeraConfig:
 
     def test_user_agent_updated(self):
         import config
-        assert "9.0-Chimera" in config.DEFAULT_USER_AGENT
+        assert "10.0-Phoenix" in config.DEFAULT_USER_AGENT
 
     def test_eight_valid_depths(self):
         import config
-        assert len(config._VALID_DEPTHS) == 8
+        assert len(config._VALID_DEPTHS) == 9
         assert "chimera" in config._VALID_DEPTHS
 
 
@@ -573,8 +573,8 @@ class TestSARIFReporter:
         sarif = reporter.generate(self._sample_findings())
         tool = sarif["runs"][0]["tool"]["driver"]
         assert tool["name"] == "VenomStrike"
-        assert tool["version"] == "9.0.0"
-        assert "Chimera" in tool["fullName"]
+        assert tool["version"] == "10.0.0"
+        assert "Phoenix" in tool["fullName"]
 
     def test_rules_generated(self):
         from core.sarif_reporter import SARIFReporter

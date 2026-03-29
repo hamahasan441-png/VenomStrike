@@ -75,8 +75,8 @@ def test_depth_presets_ordering():
 def test_version_is_8():
     """Version should be 9.0.0 for Chimera edition."""
     import config
-    assert config.VERSION == "9.0.0"
-    assert config.CODENAME == "Chimera"
+    assert config.VERSION == "10.0.0"
+    assert config.CODENAME == "Phoenix"
 
 
 def test_apex_integration_config_keys():
