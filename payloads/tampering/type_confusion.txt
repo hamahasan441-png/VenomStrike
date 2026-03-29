@@ -1,0 +1,16 @@
+[]
+{}
+true
+false
+null
+["admin"]
+{"role": "admin"}
+{"__proto__": {"admin": true}}
+0
+1
+-1
+[null]
+[1,2,3]
+{"key": "value"}
+undefined
+NaN
