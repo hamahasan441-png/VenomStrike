@@ -72,7 +72,7 @@ def test_depth_presets_ordering():
         assert a["max_crawl_pages"] <= b["max_crawl_pages"]
 
 
-def test_version_is_5():
+def test_version_is_8():
     """Version should be 8.0.0 for Hydra edition."""
     import config
     assert config.VERSION == "8.0.0"

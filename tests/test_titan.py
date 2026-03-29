@@ -23,11 +23,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 class TestTitanConfig:
     """Verify Titan v7.0 config additions."""
 
-    def test_version_is_7(self):
+    def test_version_is_8(self):
         import config
         assert config.VERSION == "8.0.0"
 
-    def test_codename_is_titan(self):
+    def test_codename_is_hydra(self):
         import config
         assert config.CODENAME == "Hydra"
 
@@ -86,7 +86,7 @@ class TestTitanConfig:
         import config
         assert 1 <= config.OOB_CALLBACK_TIMEOUT <= 60
 
-    def test_user_agent_contains_titan(self):
+    def test_user_agent_contains_hydra(self):
         import config
         assert "Hydra" in config.DEFAULT_USER_AGENT
         assert "8.0" in config.DEFAULT_USER_AGENT

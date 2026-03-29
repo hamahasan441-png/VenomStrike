@@ -23,11 +23,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 class TestQuantumConfig:
     """Verify Quantum v4.0 config additions."""
 
-    def test_version_is_4(self):
+    def test_version_is_8(self):
         import config
         assert config.VERSION == "8.0.0"
 
-    def test_codename_is_quantum(self):
+    def test_codename_is_hydra(self):
         import config
         assert config.CODENAME == "Hydra"
 
@@ -88,7 +88,7 @@ class TestQuantumConfig:
             assert a["crawl_depth"] <= b["crawl_depth"]
             assert a["max_crawl_pages"] <= b["max_crawl_pages"]
 
-    def test_user_agent_contains_quantum(self):
+    def test_user_agent_contains_hydra(self):
         import config
         assert "Hydra" in config.DEFAULT_USER_AGENT or "8.0" in config.DEFAULT_USER_AGENT
 
